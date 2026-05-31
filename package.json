@@ -1,0 +1,15 @@
+{
+  "name": "snoopy",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "fastify": "^4.0.0",
+    "@fastify/static": "^6.0.0",
+    "@fastify/compress": "^6.0.0",
+    "@fastify/cookie": "^9.0.0",
+    "dotenv": "^16.0.0"
+  }
+}
