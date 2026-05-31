@@ -29,7 +29,7 @@ await app.register(fastifyCookie);
 await app.register(compress, { global: true, encodings: ['gzip','deflate','br'] });
 
 app.register(fastifyStatic, {
-  root: join(__dirname, "dist"),
+  root: join(__dirname, "."),
   prefix: "/",
   decorateReply: true,
   etag: true,
