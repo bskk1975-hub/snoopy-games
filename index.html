@@ -1319,7 +1319,6 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
     <div class="modal-file" id="modal-file"></div>
     <button class="modal-play" onclick="playExperience()">▶  PLAY NOW</button>
     <button class="modal-play-alt" onclick="playExperienceNewTab()">⊡ Open in New Tab</button>
-    <button class="modal-play-blank" onclick="playExperienceBlobTab()">⊡ Open via Blob Tab</button>
   </div>
 </div>
 
@@ -1366,10 +1365,9 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 // ════════════════════════════════════════════════
 // CONSTANTS & CONFIG
 // ════════════════════════════════════════════════
-const SITE_PASSWORD = 'Snoopyisthebest@123';
+const SITE_PASSWORD = 'RajveerDutthump@123';
 const ACCOUNTS = {
   'snoopy':      {password:'KrishIsTheOwnerOfSnoopy', display:'Snoopy',      color:'#4a90e2', bio:'Owner Of Snoopy.',            isOwner:true},
-  'rajclaps123': {password:'Snoopy123',               display:'Rajclaps123', color:'#e67e22', bio:'Rajveer DuttMuttyCrustyHump.',isOwner:false},
   'lucas':       {password:'Snoopy@123',              display:'Lucas',       color:'#8e44ad', bio:'Admin Of Snoopy.',            isAdmin:true},
   'test':        {password:'TestAccount',             display:'Test',        color:'#8e44ad', bio:'Test Account Of Snoopy.',     isAdmin:true},
   'ishaanclaps': {password:'Snoopy@122',              display:'Ishaanclaps', color:'#e67e22', bio:'Ishaan Murkerjeejeelooks.',   isOwner:false},
@@ -2057,7 +2055,7 @@ function aiClear(){
   aiHistory=[];
   const area=document.getElementById('ai-messages');area.innerHTML='';
   const w=document.createElement('div');w.className='ai-welcome';w.id='ai-welcome';
-  w.innerHTML='<div class="ai-welcome-icon">🤖</div><div class="ai-welcome-title">SNOOPY AI</div><div class="ai-welcome-sub">Powered by Google Gemini. Ask anything!</div><div class="ai-quick-btns"><button class="ai-quick-btn" onclick="aiQuick(\'Help me with homework\')">📚 Homework</button><button class="ai-quick-btn" onclick="aiQuick(\'Tell me a fun fact\')">💡 Fun Fact</button><button class="ai-quick-btn" onclick="aiQuick(\'Write a short story\')">✍️ Story</button></div>';
+  w.innerHTML='<div class="ai-welcome-icon">🤖</div><div class="ai-welcome-title">SNOOPY AI</div><div class="ai-welcome-sub">Powered by Google Gemini. Ask anything! If API doesnt work, repaste the api inside the api box in Settings.</div><div class="ai-quick-btns"><button class="ai-quick-btn" onclick="aiQuick(\'Help me with homework\')">📚 Homework</button><button class="ai-quick-btn" onclick="aiQuick(\'Tell me a fun fact\')">💡 Fun Fact</button><button class="ai-quick-btn" onclick="aiQuick(\'Write a short story\')">✍️ Story</button></div>';
   area.appendChild(w);
 }
 async function aiSend(){
