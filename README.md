@@ -1,8 +1,8 @@
-# snoopy-games <---- These are default when creating a README.md.
-Snoopy Games <---- These are default when creating a README.md.
+# snoopy-games <---- These are the defaults when creating a README.md.
+Snoopy Games <---- These are the defaults when creating a README.md.
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Welcome to Snoopy Games.
-This is my first github project ever!
-This is kinda an proxy/game site in a way.
+This is my first GitHub project ever!
+This is kinda a proxy/game site in a way.
 Future updates coming soon!
                                 © Snoopy Games 2026 ©
