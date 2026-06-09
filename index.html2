@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Omega Multi-Tool V6</title>
+    <style>
+        :root {
+            --bg: #e0e5ec;
+            --orange: #ff9f0a;
+            --green: #2ecc71;
+            --shadow-d: #a3b1c6;
+            --shadow-l: #ffffff;
+        }
+
+        body {
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', sans-serif;
+            perspective: 2000px;
+        }
+
+        /* --- NAVIGATION --- */
+        .nav-bar { 
+            display: flex; gap: 10px; margin-bottom: 20px; z-index: 100;
+            padding: 10px; border-radius: 20px; background: var(--bg);
+            box-shadow: 10px 10px 20px var(--shadow-d), -10px -10px 20px var(--shadow-l);
+        }
+        .nav-item {
+            padding: 10px 18px; border-radius: 12px; cursor: pointer;
+            font-weight: 800; font-size: 0.8rem; color: #777; transition: 0.3s;
+        }
+        .nav-item.active-nav { 
+            color: var(--orange); 
+            box-shadow: inset 5px 5px 10px var(--shadow-d), inset -5px -5px 10px var(--shadow-l);
+        }
+
+        /* --- MASTER WINDOW --- */
+        .window-manager {
+            position: relative; width: 450px; height: 600px;
+            transition: transform 0.1s ease-out;
+        }
+
+        .card {
+            position: absolute; width: 100%; height: 100%;
+            background: var(--bg); border-radius: 50px; padding: 40px;
+            box-sizing: border-box; 
+            box-shadow: 25px 25px 50px var(--shadow-d), -25px -25px 50px var(--shadow-l);
+            display: none; flex-direction: column; overflow: hidden;
+        }
+        .active-card { display: flex; animation: intro 0.5s ease; }
+        @keyframes intro { from { opacity: 0; transform: scale(0.9); } }
+
+        /* --- THE WHEEL OVERLAY --- */
+        #type-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(224, 229, 236, 0.95);
+            display: none; flex-direction: column; justify-content: center;
+            align-items: center; z-index: 200; backdrop-filter: blur(8px);
+        }
+        .wheel-container { position: relative; width: 220px; height: 220px; }
+        svg { transform: rotate(-90deg); }
+        .wheel-bg { fill: none; stroke: #d1d9e6; stroke-width: 15; }
+        .wheel-fill {
+            fill: none; stroke: var(--green); stroke-width: 15;
+            stroke-linecap: round; stroke-dasharray: 565; stroke-dashoffset: 565;
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.17, 0.67, 0.83, 0.67);
+        }
+        .wheel-stats {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; width: 100%;
+        }
+        .wheel-stats h1 { margin: 0; font-size: 3rem; color: #333; }
+        .wheel-labels { width: 100%; display: flex; justify-content: space-between; padding: 0 40px; font-weight: 900; color: #888; }
+
+        /* --- UI ELEMENTS --- */
+        .lcd { background: #111; padding: 20px; border-radius: 25px; margin-bottom: 20px; box-shadow: inset 8px 8px 16px #000; }
+        #calc-display, #type-area {
+            width: 100%; background: #9fb38a; border: none; font-size: 2rem;
+            padding: 15px; box-sizing: border-box; font-family: monospace; border-radius: 8px;
+        }
+        #type-area { font-size: 1.1rem; min-height: 200px; text-align: left; }
+        .correct { color: #004d00; font-weight: bold; }
+        .current { background: rgba(255, 159, 10, 0.3); border-left: 3px solid var(--orange); }
+
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        button {
+            height: 55px; border-radius: 15px; border: none; background: var(--bg);
+            font-weight: 900; box-shadow: 5px 5px 10px var(--shadow-d), -5px -5px 10px var(--shadow-l);
+            cursor: pointer; transition: 0.2s;
+        }
+        button:active { box-shadow: inset 3px 3px 6px var(--shadow-d); transform: scale(0.95); }
+
+        .diamond {
+            width: 140px; height: 140px; background: var(--orange); margin: 50px auto;
+            transform: rotate(45deg); display: flex; justify-content: center; align-items: center;
+            cursor: pointer; box-shadow: 10px 10px 30px rgba(255,159,10,0.3);
+        }
+        .diamond span { transform: rotate(-45deg); font-size: 4rem; user-select: none; }
+        .particle { position: fixed; pointer-events: none; z-index: 1000; border-radius: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="nav-bar">
+        <div class="nav-item active-nav" id="n1" onclick="swap('card-calc', 'n1')">CALC</div>
+        <div class="nav-item" id="n2" onclick="swap('card-click', 'n2')">GEMS</div>
+        <div class="nav-item" id="n3" onclick="swap('card-type', 'n3')">WORDS</div>
+    </div>
+
+    <div id="container" class="window-manager">
+        <div class="card active-card" id="card-calc">
+            <div class="lcd"><input type="text" id="calc-display" readonly placeholder="0"></div>
+            <div class="grid">
+                <button onclick="calc('AC')">AC</button><button onclick="calc('back')">DEL</button>
+                <button onclick="calc('/')">/</button><button onclick="calc('*')">X</button>
+                <button onclick="calc('7')">7</button><button onclick="calc('8')">8</button><button onclick="calc('9')">9</button>
+                <button onclick="calc('-')">-</button>
+                <button onclick="calc('4')">4</button><button onclick="calc('5')">5</button><button onclick="calc('6')">6</button>
+                <button onclick="calc('+')">+</button>
+                <button onclick="calc('1')">1</button><button onclick="calc('2')">2</button><button onclick="calc('3')">3</button>
+                <button onclick="calc('.')">.</button><button onclick="calc('0')">0</button>
+                <button style="background:var(--orange); color:white; grid-column:span 2" onclick="calc('=')">=</button>
+            </div>
+        </div>
+
+        <div class="card" id="card-click">
+            <h1 id="score" style="text-align:center; color:var(--orange); font-size:4rem; margin:0;">0</h1>
+            <div class="diamond" onmousedown="pop(event)"><span>💎</span></div>
+        </div>
+
+        <div class="card" id="card-type">
+            <div id="type-overlay">
+                <div class="wheel-container">
+                    <svg width="200" height="200">
+                        <circle class="wheel-bg" cx="100" cy="100" r="90"></circle>
+                        <circle class="wheel-fill" id="w-fill" cx="100" cy="100" r="90"></circle>
+                    </svg>
+                    <div class="wheel-stats">
+                        <p style="margin:0; font-weight:bold; color:#777;">SPEED</p>
+                        <h1 id="res-wpm">0</h1>
+                        <p style="margin:0; font-weight:bold; color:#777;">WPM</p>
+                    </div>
+                </div>
+                <div class="wheel-labels"><span>0</span><span>300</span></div>
+                <p style="margin-top:20px; font-weight:bold;">Time: <span id="res-time">0</span>s</p>
+                <button onclick="resetType()" style="background:var(--green); color:white; width:180px; margin-top:15px;">NEXT SENTENCE</button>
+            </div>
+            <h3 style="color:var(--orange); margin:0; text-align:center;">TYPING TEST</h3>
+            <div class="lcd" style="margin-top:10px;"><div id="type-area"></div></div>
+        </div>
+    </div>
+
+    <script>
+        const container = document.getElementById('container');
+        const cDisp = document.getElementById('calc-display');
+        const tArea = document.getElementById('type-area');
+        const overlay = document.getElementById('type-overlay');
+        const wFill = document.getElementById('w-fill');
+        
+        let pts = 0;
+        let target = "", pos = 0, start = null;
+        const texts = [
+            "Programming is not about what you know; it is about what you can figure out.",
+            "The best error message is the one that never shows up because you coded perfectly.",
+            "Type fast and move through the digital world like a master of the keyboard.",
+            "Consistency is the secret ingredient to becoming a top tier software engineer."
+        ];
+
+        // --- 3D MOUSE FOLLOW ---
+        window.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.clientX) / 30;
+            const y = (window.innerHeight / 2 - e.clientY) / 30;
+            container.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
+        });
+
+        // --- NAVIGATION ---
+        function swap(cId, nId) {
+            document.querySelectorAll('.card').forEach(c => c.classList.remove('active-card'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active-nav'));
+            document.getElementById(cId).classList.add('active-card');
+            document.getElementById(nId).classList.add('active-nav');
+            if(cId === 'card-type') resetType();
+        }
+
+        // --- CALCULATOR ---
+        function calc(v) {
+            if(v === 'AC') cDisp.value = '';
+            else if(v === 'back') cDisp.value = cDisp.value.slice(0,-1);
+            else if(v === '=') { try { cDisp.value = eval(cDisp.value); } catch { cDisp.value = 'ERR'; } }
+            else { cDisp.value += v; }
+            if(cDisp.value === "8989") window.location.href = "index2.html";
+        }
+
+        // --- CLICKER ---
+        function pop(e) {
+            pts++; document.getElementById('score').innerText = pts;
+            for(let i=0; i<10; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle'; p.style.width = p.style.height = '10px';
+                p.style.background = '#ff9f0a'; p.style.left = e.clientX+'px'; p.style.top = e.clientY+'px';
+                document.body.appendChild(p);
+                const tx = (Math.random()-0.5)*300, ty = (Math.random()-0.5)*300;
+                p.animate([{transform:'scale(1)',opacity:1},{transform:`translate(${tx}px,${ty}px) scale(0)`,opacity:0}], 600).onfinish = () => p.remove();
+            }
+        }
+
+        // --- TYPING ---
+        function resetType() {
+            overlay.style.display = 'none';
+            wFill.style.strokeDashoffset = 565;
+            target = texts[Math.floor(Math.random()*texts.length)];
+            pos = 0; start = null; render();
+        }
+
+        function render() {
+            tArea.innerHTML = target.split('').map((c, i) => {
+                let cl = i < pos ? 'correct' : (i === pos ? 'current' : '');
+                return `<span class="${cl}">${c}</span>`;
+            }).join('');
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if(!document.getElementById('card-type').classList.contains('active-card')) return;
+            if(e.key.length > 1) return;
+            if(!start) start = Date.now();
+
+            if(e.key === target[pos]) {
+                pos++;
+                if(pos === target.length) {
+                    const elapsed = (Date.now() - start) / 1000;
+                    const wpm = Math.round((pos/5)/(elapsed/60));
+                    overlay.style.display = 'flex';
+                    document.getElementById('res-wpm').innerText = wpm;
+                    document.getElementById('res-time').innerText = elapsed.toFixed(1);
+                    const offset = 565 - (565 * Math.min(wpm/300, 1));
+                    setTimeout(() => wFill.style.strokeDashoffset = offset, 100);
+                }
+            }
+            render();
+        });
+    </script>
+</body>
+</html>
