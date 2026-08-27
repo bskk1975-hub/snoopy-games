@@ -896,7 +896,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
       <div id="settings-panel-inner">
         <div class="settings-hbar">
           <h3>⚙️ SETTINGS</h3>
-          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);">Snoopy v2.9.0</span>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);">Snoopy v3.1.4</span>
         </div>
         <div class="settings-body">
           <div class="settings-section">
@@ -1009,7 +1009,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
               </select>
             </div>
             <div class="settings-row">
-              <div class="settings-row-left"><div class="settings-row-label">Safe Search</div></div>
+              <div class="settings-row-left"><div class="settings-row-label">Safe Search (BETA)</div></div>
               <label class="sn-toggle"><input type="checkbox" id="set-safe-search" checked/><span class="sn-slider"></span></label>
             </div>
             <div class="settings-row">
@@ -1021,7 +1021,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
           <div class="settings-section">
             <div class="settings-section-hdr">
               <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              <span class="settings-section-title">CHAT</span>
+              <span class="settings-section-title">CHAT (BETA)</span>
             </div>
             <div class="settings-row">
               <div class="settings-row-left"><div class="settings-row-label">Show Timestamps</div></div>
@@ -1330,7 +1330,7 @@ function fmtSeconds(s){if(!isFinite(s)||s<0)return '—';const h=Math.floor(s/36
 function gel(id){return document.getElementById(id)||{textContent:'',style:{}};}
 
 // ════════════════════════════════════════════════
-// NEW TAB — about:blank wrapper
+// NEW TAB — about:blank 
 // ════════════════════════════════════════════════
 function openInNewTab(url, title){
   openUrlViaBlankTab(url, title||url);
@@ -1468,7 +1468,7 @@ function showMain(){
   const ul=document.getElementById('about-user-lbl');if(ul)ul.textContent='@'+sessionProfile.display;
   sysInfoUptimeStart=Date.now();
   updateGeminiKeyStatus();
-  consoleLog('Snoopy v3.0.1 initialized','info');
+  consoleLog('Snoopy v3.1.4 initialized','info');
   consoleLog('Logged in as @'+sessionProfile.display,'log');
   consoleLog('AI: Gemini Loaded','info');
   brInitTabs();
