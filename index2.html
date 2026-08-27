@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Home - Classroom</title>
+<title>Test Project</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap');
 #code-editor-wrap .CodeMirror{height:100%;font-family:'Share Tech Mono',monospace;font-size:13px;}
@@ -605,7 +605,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
         <div class="chat-hbar">
           <h3>💬 CHAT</h3>
           <div class="chat-hbar-right">
-            <span class="chat-online-pill">● Online</span>
+            <span class="chat-online-pill" id="chat-online-pill">● Connecting...</span>
             <button class="chat-clr-btn" onclick="clearChat()">CLEAR</button>
           </div>
         </div>
@@ -896,7 +896,10 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
       <div id="settings-panel-inner">
         <div class="settings-hbar">
           <h3>⚙️ SETTINGS</h3>
-          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);">Snoopy v3.1.4</span>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);">Snoopy v3.1.4</span>
+            <button class="save-btn" id="settings-save-btn" onclick="saveAllSettings()" style="padding:7px 18px;font-size:13px;">💾 SAVE SETTINGS</button>
+          </div>
         </div>
         <div class="settings-body">
           <div class="settings-section">
@@ -1230,6 +1233,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pubnub@8.1.1/dist/web/pubnub.min.js"></script>
 <script>
 // ════════════════════════════════════════════════
 // CONSTANTS & CONFIG
@@ -1269,30 +1273,25 @@ const DEFAULT_AI_SYSTEM = 'You are Snoopy AI, a helpful, friendly, and knowledge
 let customSystemPrompt = '';
 
 const DIRECT_URLS = {
-  'Bouncy Balls':            'https://bouncyballs.org/',
-  'Discord':                 'https://e.widgetbot.io/channels/1506473982214537236/1506473982709202947/',
-  'DogeUB':                  'https://www.www.ea.e.cool.qzz.io.cdn.cloudflare.net/',
-  'Escape Road':             'https://unblockedescaperoads.com/',
-  'GEOMETRY DASH LITE':      'https://rawcdn.githack.com/genizy/google-class/main/gdlite/index.html',
-  'GN-MATH':                 'https://gn-math.dev',
-  'Haha Games':              'https://hahagames.github.io/crazy-games/',
-  'Horizon':                 'https://horizon--securlydistrict.replit.app/',
-  'Jamal Game Hub':          'https://jamalsgamehubfiletest.pages.dev/',
-  'MIZU':                    'https://math.helenajohansson.net/',
-  'OverCloaked':             'https://s3.amazonaws.com/sadddwasffwaaaasf/https://overyourmom.turbo-education.com/overyourmom.turbo-education.com/index.html',
-  'Paper.io':                'https://goblinkingdev.github.io/paperio2-unblocked/',
-  'Pizza Edition':           'https://pizzaedition.win/',
-  'Rocket Goal':             'https://rocketgoal.io/',
-  'TGLSC Density 5':         'https://blooket.com.iiiii.info/',
-  'VAPOR':                   'https://3fwildcarded.vaporizes.helped.iiiii.info/',
-  'Zodiac':                  'https://cdn.statically.io/gh/darkdragonzxs/zd-pages@main/svg.svg'
+  'Wiki':                   'https://en.wikipedia.org/wiki/Main_Page',
+  'YouTube':                  'https://YouTube.com'
 };
 
 
 const CHAT_STORAGE_KEY    = 'snoopy_chat_v1';
 const SEARCH_HISTORY_KEY  = 'snoopy_search_hist_v1';
 const PROFILE_STORAGE_KEY = 'snoopy_profile_v1';
+const SETTINGS_STORAGE_KEY= 'snoopy_settings_v1';
 const AI_MAX_TURNS        = 20;
+
+// Cross-device chat sync — uses PubNub's public "demo" keyset (no signup
+// required, rate-limited, shared globally). A distinctive channel name
+// keeps collisions with other apps unlikely but not impossible, and there
+// is no message history/persistence on the demo keys — only messages sent
+// while at least one device is connected are relayed live to other devices.
+// For anything beyond a test project, swap in your own free PubNub keys.
+const PN_CHANNEL = 'snoopy-app-x7k2-chat-room';
+let pubnub=null, pnDeviceId=null;
 const ACOLORS = ['#4a90e2','#306998','#e25c4a','#c0392b','#27ae60','#8e44ad','#e67e22','#16a085','#d35400','#2c3e50','#1abc9c','#e91e63'];
 const ACCENT_COLORS = [
   {name:'Blue',   a:'#58a6ff', a2:'#306998', a3:'#4a90e2'},
@@ -1463,7 +1462,7 @@ function showMain(){
   document.getElementById('app').style.display='flex';
   document.getElementById('user-chip').textContent='@'+sessionProfile.display;
   buildLetterSidebar();buildSections();buildColorPicker();loadProfilePanel();
-  loadAndRenderChat();populateModelSelect();buildAccentSwatches();
+  loadAndRender();populateModelSelect();buildAccentSwatches();
   loadSearchHistory();updateSerpModeLabel();
   const ul=document.getElementById('about-user-lbl');if(ul)ul.textContent='@'+sessionProfile.display;
   sysInfoUptimeStart=Date.now();
@@ -1472,7 +1471,7 @@ function showMain(){
   consoleLog('Logged in as @'+sessionProfile.display,'log');
   consoleLog('AI: Gemini Loaded','info');
   brInitTabs();
-  const history=loadChatHistory(),joinTxt=sessionProfile.display+' joined';
+  const history=loadHistory(),joinTxt=sessionProfile.display+' joined';
   const recentJoin=history.slice(-10).some(m=>m.type==='system'&&m.text===joinTxt&&(Date.now()-new Date(m.time).getTime()<5*60*1000));
   if(!recentJoin)addSystemMsg(joinTxt);
   navTo('experiences');
@@ -1482,7 +1481,7 @@ function kbShortcut(e){
   if(!kbdShortcutsEnabled)return;
   const tag=document.activeElement.tagName;
   if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(tag))return;
-  const map={g:'experiences',c:'chat',a:'ai',b:'browser',y:'youtube',i:'sysinfo',s:'settings',u:'users',p:'profile',x:'console'};
+  const map={g:'experiences',c:'',a:'ai',b:'browser',y:'youtube',i:'sysinfo',s:'settings',u:'users',p:'profile',x:'console'};
   if(map[e.key])navTo(map[e.key]);
   if(e.key==='/'&&activePanel==='experiences'){e.preventDefault();document.getElementById('search').focus();}
 }
@@ -1494,7 +1493,7 @@ function logout(){
   savePersistedProfile();
   sessionKey=null;sessionProfile={};unread=0;aiHistory=[];viewingProfileKey=null;curUrl=null;curExperience=null;curExperienceEntry=null;
   document.getElementById('app').style.display='none';
-  document.getElementById('chat-messages').innerHTML='';
+  document.getElementById('-messages').innerHTML='';
   aiClear();brReset();ytStop();
   document.getElementById('li-user').value='';document.getElementById('li-pass').value='';
   document.getElementById('acc-err').textContent='';
@@ -1503,7 +1502,7 @@ function logout(){
 }
 
 function navTo(p){
-  ['experiences','chat','users','ai','browser','youtube','sysinfo','profile','settings','console','code'].forEach(x=>{
+  ['experiences','','users','ai','browser','youtube','sysinfo','profile','settings','console','code'].forEach(x=>{
     const nb=document.getElementById('nav-'+x),pb=document.getElementById('panel-'+x);
     if(nb)nb.classList.toggle('active',x===p);
     if(pb)pb.classList.toggle('active',x===p);
@@ -1513,7 +1512,7 @@ function navTo(p){
   const showLS=p==='experiences'&&document.getElementById('set-letter-sidebar')?.checked!==false;
   document.getElementById('letter-sidebar').style.display=showLS?'flex':'none';
   activePanel=p;
-  if(p==='chat'){unread=0;updateBadge();setTimeout(()=>{document.getElementById('chat-input').focus();document.getElementById('chat-messages').scrollTop=9e9;},50);}
+  if(p===''){unread=0;updateBadge();setTimeout(()=>{document.getElementById('-input').focus();document.getElementById('-messages').scrollTop=9e9;},50);}
   if(p==='profile'&&!viewingProfileKey){document.getElementById('profile-body-me').style.display='';document.getElementById('profile-body-other').style.display='none';document.getElementById('profile-panel-title').textContent='👤 MY PROFILE';document.getElementById('profile-back-btn').style.display='none';loadProfilePanel();}
   if(p==='users')renderUsers();
   if(p==='ai'){setTimeout(()=>document.getElementById('ai-input').focus(),50);updateGeminiKeyStatus();}
@@ -2072,14 +2071,16 @@ function consoleExec(e){
 })();
 
 // ════════════════════════════════════════════════
-// CHAT
+//  — synced live across devices via PubNub
 // ════════════════════════════════════════════════
-function loadChatHistory(){try{return JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY)||'[]');}catch(e){return[];}}
-function saveChatHistory(msgs){try{localStorage.setItem(CHAT_STORAGE_KEY,JSON.stringify(msgs.slice(-250)));}catch(e){}}
-function appendChatMsg(msgObj){const msgs=loadChatHistory();msgs.push(msgObj);saveChatHistory(msgs);}
-function exportChatLog(){const blob=new Blob([JSON.stringify(loadChatHistory(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='snoopy-chat.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Exported','success');}
-function renderChatMsgEl(msgObj){
-  const cont=document.getElementById('chat-messages');
+function loadHistory(){try{return JSON.parse(localStorage.getItem(_STORAGE_KEY)||'[]');}catch(e){return[];}}
+function saveHistory(msgs){try{localStorage.setItem(_STORAGE_KEY,JSON.stringify(msgs.slice(-250)));}catch(e){}}
+function makeMsgId(){try{return crypto.randomUUID();}catch(e){return 'm'+Date.now()+'-'+Math.random().toString(36).slice(2);}}
+function haveMsg(id){return loadHistory().some(m=>m.id===id);}
+function appendMsg(msgObj){const msgs=loadHistory();if(msgObj.id&&msgs.some(m=>m.id===msgObj.id))return;msgs.push(msgObj);saveHistory(msgs);}
+function exportLog(){const blob=new Blob([JSON.stringify(loadHistory(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='snoopy-.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Exported','success');}
+function renderMsgEl(msgObj){
+  const cont=document.getElementById('-messages');
   if(msgObj.type==='system'){const e=document.createElement('div');e.className='chat-system';e.textContent='— '+msgObj.text+' —';cont.appendChild(e);return;}
   const isMe=(msgObj.key===sessionKey);const e=document.createElement('div');e.className='chat-msg '+(isMe?'me':'other');
   const showTs=document.getElementById('set-timestamps')?.checked!==false;
@@ -2088,16 +2089,57 @@ function renderChatMsgEl(msgObj){
 }
 function loadAndRenderChat(){const cont=document.getElementById('chat-messages');cont.innerHTML='';loadChatHistory().forEach(m=>renderChatMsgEl(m));cont.scrollTop=cont.scrollHeight;}
 function updateBadge(){const b=document.getElementById('chat-badge');if(unread>0&&activePanel!=='chat'){b.textContent=unread>9?'9+':String(unread);b.style.display='flex';}else b.style.display='none';}
-function addSystemMsg(text){const msgObj={type:'system',text,time:nowFull()};appendChatMsg(msgObj);renderChatMsgEl(msgObj);document.getElementById('chat-messages').scrollTop=9e9;}
+function setChatOnlinePill(text,ok){const p=document.getElementById('chat-online-pill');if(!p)return;p.textContent=(ok?'● ':'○ ')+text;p.style.color=ok?'var(--green)':'var(--text3)';p.style.borderColor=ok?'rgba(63,185,80,0.25)':'var(--border2)';}
+function addSystemMsg(text,broadcast){
+  const msgObj={type:'system',id:makeMsgId(),text,time:nowFull()};
+  appendChatMsg(msgObj);renderChatMsgEl(msgObj);document.getElementById('chat-messages').scrollTop=9e9;
+  if(broadcast!==false)pnPublish(msgObj);
+}
 function sendChat(){
   const inp=document.getElementById('chat-input'),text=inp.value.trim();if(!text||!sessionKey)return;
   inp.value='';sessionProfile.msgCount=(sessionProfile.msgCount||0)+1;
   const el=document.getElementById('my-msgs');if(el)el.textContent=sessionProfile.msgCount;savePersistedProfile();
-  const msgObj={type:'msg',key:sessionKey,display:sessionProfile.display,text,time:nowFull()};
+  const msgObj={type:'msg',id:makeMsgId(),key:sessionKey,display:sessionProfile.display,text,time:nowFull()};
   appendChatMsg(msgObj);renderChatMsgEl(msgObj);document.getElementById('chat-messages').scrollTop=9e9;
+  if(activePanel!=='chat'){}else{unread=0;updateBadge();}
+  pnPublish(msgObj);
 }
-function clearChat(){if(!confirm('Clear all chat history?'))return;clearChatSilent();}
+function clearChat(){if(!confirm('Clear all chat history on this device?'))return;clearChatSilent();}
 function clearChatSilent(){localStorage.removeItem(CHAT_STORAGE_KEY);document.getElementById('chat-messages').innerHTML='';}
+
+// ---- PubNub wiring ----
+function pnPublish(msgObj){
+  if(!pubnub){consoleLog('Chat not connected — message saved locally only','warn');return;}
+  pubnub.publish({channel:PN_CHANNEL,message:msgObj}).catch(err=>{consoleLog('Chat publish failed: '+err.message,'error');});
+}
+function pnConnectChat(){
+  if(typeof PubNub==='undefined'){setTimeout(pnConnectChat,200);return;}
+  if(pubnub)return;
+  if(!pnDeviceId){try{pnDeviceId='snoopy-'+crypto.randomUUID();}catch(e){pnDeviceId='snoopy-'+Date.now()+'-'+Math.random().toString(36).slice(2);}}
+  setChatOnlinePill('Connecting...',false);
+  pubnub=new PubNub({publishKey:'demo',subscribeKey:'demo',uuid:pnDeviceId});
+  pubnub.addListener({
+    status:(s)=>{
+      if(s.category==='PNConnectedCategory'){setChatOnlinePill('Live — synced across devices',true);}
+      else if(s.category==='PNNetworkDownCategory'||s.category==='PNNetworkIssuesCategory'){setChatOnlinePill('Reconnecting...',false);}
+      else if(s.category==='PNReconnectedCategory'){setChatOnlinePill('Live — synced across devices',true);}
+    },
+    message:(evt)=>{
+      const msgObj=evt.message;if(!msgObj||!msgObj.id)return;
+      if(haveMsg(msgObj.id))return; // already have it (e.g. our own optimistic render)
+      appendChatMsg(msgObj);renderChatMsgEl(msgObj);
+      document.getElementById('chat-messages').scrollTop=9e9;
+      if(msgObj.type==='msg'&&msgObj.key!==sessionKey&&activePanel!=='chat'){unread++;updateBadge();}
+    }
+  });
+  pubnub.subscribe({channels:[PN_CHANNEL]});
+}
+function pnDisconnectChat(){
+  if(!pubnub)return;
+  try{pubnub.unsubscribeAll();pubnub.destroy();}catch(e){}
+  pubnub=null;
+  setChatOnlinePill('Offline',false);
+}
 
 // ════════════════════════════════════════════════
 // PROFILE / AVATAR
