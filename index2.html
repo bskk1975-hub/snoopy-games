@@ -6,6 +6,7 @@
 <title>Test Project</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap');
+#code-editor-wrap .CodeMirror{height:100%;font-family:'Share Tech Mono',monospace;font-size:13px;}
 :root{
   --bg:#0d1117;--bg2:#161b22;--bg3:#1c2128;
   --border:#30363d;--border2:#444c56;
@@ -581,6 +582,9 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>SET
       </button>
       <div class="nav-sep"></div>
+      <button class="nav-btn" id="nav-code" onclick="navTo('code')">
+        <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>CODE
+      </button>
       <button class="nav-btn" id="nav-console" onclick="navTo('console')">
         <svg viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>CON
       </button>
@@ -1107,6 +1111,24 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
       </div>
     </div>
 
+    <!-- CODE EDITOR -->
+    <div class="panel" id="panel-code">
+      <div style="display:flex;flex-direction:column;height:100%;background:var(--bg);">
+        <div class="panel-hbar">
+          <h3>&lt;/&gt; CODE EDITOR</h3>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button class="chat-clr-btn" onclick="codeRun()">▶ RUN</button>
+            <button class="chat-clr-btn" onclick="codeDownload()">⬇ SAVE</button>
+            <button class="chat-clr-btn" onclick="codeReset()">↺ RESET</button>
+          </div>
+        </div>
+        <div style="flex:1;display:flex;overflow:hidden;min-height:0;">
+          <div id="code-editor-wrap" style="flex:1;min-width:0;overflow:hidden;border-right:1px solid var(--border);"></div>
+          <iframe id="code-preview" style="flex:1;min-width:0;border:none;background:#fff;" sandbox="allow-scripts allow-modals"></iframe>
+        </div>
+      </div>
+    </div>
+
     <!-- CONSOLE -->
     <div class="panel" id="panel-console">
       <div class="console-panel">
@@ -1199,6 +1221,15 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 <style id="chat-bubble-color-style2"></style>
 <style id="bg-opacity-style"></style>
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
 <script>
 // ════════════════════════════════════════════════
 // CONSTANTS & CONFIG
@@ -1206,10 +1237,11 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 const SITE_PASSWORD = 'Snoopyisthegoatboi@123';
 const ACCOUNTS = {
   'snoopy':      {password:'KrishIsTheOwnerOfSnoopy', display:'Snoopy',      color:'#4a90e2', bio:'Owner Of Snoopy.',            isOwner:true},
-  'lucas':       {password:'Snoopy@123',              display:'Lucas',       color:'#8e44ad', bio:'Admin Of Snoopy.',            isAdmin:true},
+  'lucas':       {password:'Snoopy@123',              display:'Lucas',       color:'#0A1172', bio:'Admin Of Snoopy.',            isAdmin:true},
+  'gabe':       {password:'Snoopy@123',              display:'Gabe',       color:'#0A1172', bio:'Admin Of Snoopy.',            isAdmin:true},
   'test':        {password:'TestAccount@123',             display:'Test',        color:'#8e44ad', bio:'Test Account Of Snoopy.',     isAdmin:true},
-  'ishaanclaps': {password:'Snoopy@122',              display:'Ishaanclaps', color:'#e67e22', bio:'Ishaan Murkerjeejeelooks.',   isOwner:false},
-  'rajclaps123':        {password:'ClappingMonster',             display:'Rajclaps123',        color:'#8e44ad', bio:'DuttyMuttyCrusty.',         isAdmin:false}
+  'ishaanclaps': {password:'Snoopy@122',              display:'Ishaanclaps', color:'#e67e22', bio:'Ishaan Murkerjeejeelooks.',   isAdmin:false},
+  'rajclaps123':        {password:'ClappingMonster',             display:'Rajclaps123',        color:'#0A1172', bio:'DuttyMuttyCrusty.',         isAdmin:false}
 };
 
 const GEMINI_KEY_STORAGE = 'snoopy_gemini_api_key';
@@ -1255,6 +1287,7 @@ const DIRECT_URLS = {
   'VAPOR':                   'https://3fwildcarded.vaporizes.helped.iiiii.info/',
   'Zodiac':                  'https://cdn.statically.io/gh/darkdragonzxs/zd-pages@main/svg.svg'
 };
+
 
 const CHAT_STORAGE_KEY    = 'snoopy_chat_v1';
 const SEARCH_HISTORY_KEY  = 'snoopy_search_hist_v1';
@@ -1470,7 +1503,7 @@ function logout(){
 }
 
 function navTo(p){
-  ['experiences','chat','users','ai','browser','youtube','sysinfo','profile','settings','console'].forEach(x=>{
+  ['experiences','chat','users','ai','browser','youtube','sysinfo','profile','settings','console','code'].forEach(x=>{
     const nb=document.getElementById('nav-'+x),pb=document.getElementById('panel-'+x);
     if(nb)nb.classList.toggle('active',x===p);
     if(pb)pb.classList.toggle('active',x===p);
@@ -1486,6 +1519,7 @@ function navTo(p){
   if(p==='ai'){setTimeout(()=>document.getElementById('ai-input').focus(),50);updateGeminiKeyStatus();}
   if(p==='browser')setTimeout(()=>document.getElementById('br-url-bar').focus(),50);
   if(p==='console')setTimeout(()=>document.getElementById('console-input').focus(),50);
+  if(p==='code')setTimeout(()=>{codeInitEditor();if(codeEditor)codeEditor.refresh();},50);
   if(p==='sysinfo'){refreshSysInfo();startSysInfoClock();}
   else if(sysInfoClockInterval){clearInterval(sysInfoClockInterval);sysInfoClockInterval=null;}
   if(p==='youtube')setTimeout(()=>document.getElementById('yt-url-input').focus(),50);
@@ -1736,7 +1770,8 @@ async function _doSerpFetch(query){
   for(let i=0;i<SERP_API_KEYS.length;i++){
     try{
       const params=new URLSearchParams({engine:'google',q:query,api_key:SERP_API_KEYS[i],num:String(num),safe:safe?'active':'off'});
-      const res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://serpapi.com/search?engine=google' + params));
+      const target='https://serpapi.com/search?'+params.toString();
+      const res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent(target));
       if(!res.ok)throw new Error('HTTP '+res.status);
       const json=await res.json();if(json.error)throw new Error(json.error);
       data=json;break;
@@ -1956,6 +1991,50 @@ function startSysInfoClock(){
   if(sysInfoClockInterval)clearInterval(sysInfoClockInterval);
   const tick=()=>{const d=new Date();const clk=document.getElementById('sys-clock');if(clk)clk.textContent=d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')+':'+d.getSeconds().toString().padStart(2,'0');const ux=document.getElementById('sys-unix');if(ux)ux.textContent=Math.floor(d.getTime()/1000);const up=document.getElementById('sys-uptime');if(up)up.textContent=fmtSeconds(Math.floor((Date.now()-sysInfoUptimeStart)/1000));};
   sysInfoClockInterval=setInterval(tick,1000);tick();
+}
+
+// ════════════════════════════════════════════════
+// CODE EDITOR (single pane — paste full HTML/CSS/JS together)
+// ════════════════════════════════════════════════
+const CODE_DRAFT_KEY='snoopy_code_draft_v3';
+const CODE_DEFAULT='<!DOCTYPE html>\n<html>\n<head>\n<style>\n  body{font-family:sans-serif;padding:20px;background:#f4f6fa;color:#222;}\n  button{padding:8px 16px;border-radius:6px;border:1px solid #ccc;cursor:pointer;}\n</style>\n</head>\n<body>\n  <h1>Hello, Snoopy!</h1>\n  <p>Paste or write full HTML — including &lt;style&gt; and &lt;script&gt; — right here, then hit RUN.</p>\n  <button id="myBtn">Click me</button>\n  <script>\n    document.getElementById(\'myBtn\').addEventListener(\'click\',()=>{\n      alert(\'Hi from JS!\');\n    });\n  <\/script>\n</body>\n</html>';
+let codeEditor=null;
+
+function codeInitEditor(){
+  if(codeEditor)return;
+  if(typeof CodeMirror==='undefined'){setTimeout(codeInitEditor,150);return;}
+  let saved='';try{saved=localStorage.getItem(CODE_DRAFT_KEY)||'';}catch(e){}
+  codeEditor=CodeMirror(document.getElementById('code-editor-wrap'),{
+    value:saved||CODE_DEFAULT,
+    mode:'htmlmixed',
+    theme:'dracula',
+    lineNumbers:true,
+    tabSize:2,
+    indentUnit:2,
+    autoCloseBrackets:true,
+    autoCloseTags:true,
+    lineWrapping:true
+  });
+  codeEditor.on('change',()=>{try{localStorage.setItem(CODE_DRAFT_KEY,codeEditor.getValue());}catch(e){}});
+  codeRun();
+}
+function codeRun(){
+  if(!codeEditor)return;
+  document.getElementById('code-preview').srcdoc=codeEditor.getValue();
+}
+function codeDownload(){
+  if(!codeEditor)return;
+  const blob=new Blob([codeEditor.getValue()],{type:'text/html'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='snoopy-code.html';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('Downloaded','success');
+}
+function codeReset(){
+  if(!codeEditor)return;
+  if(!confirm('Reset the editor to the default snippet? This clears your current code.'))return;
+  codeEditor.setValue(CODE_DEFAULT);
+  try{localStorage.removeItem(CODE_DRAFT_KEY);}catch(e){}
+  codeRun();
 }
 
 // ════════════════════════════════════════════════
