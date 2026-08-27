@@ -4,7 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 2.7.0   | :white_check_mark: |
+| 3.1.4  | :white_check_mark: |
 | Previous Versions |:white_check_mark: but less security measures will be there due to it being an older version|
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
