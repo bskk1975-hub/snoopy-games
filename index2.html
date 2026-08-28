@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Test Project</title>
+<title>Test Project 2</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap');
 #code-editor-wrap .CodeMirror{height:100%;font-family:'Share Tech Mono',monospace;font-size:13px;}
@@ -871,7 +871,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
               <div class="avatar-edit-btns">
                 <button class="av-upload-btn" onclick="document.getElementById('av-file-input').click()">📷 UPLOAD IMAGE / GIF</button>
                 <button class="av-remove-btn" onclick="removeAvatar()">✕ REMOVE AVATAR</button>
-                <div class="av-hint">JPG, PNG, GIF, WEBP — max 8 MB</div>
+                <div class="av-hint">JPG, PNG, GIF, WEBP (max 8 MB) — resized and synced to everyone; animated GIFs show as a still frame once shared</div>
               </div>
             </div>
             <label class="edit-label">Display Name</label>
@@ -1293,9 +1293,9 @@ const AI_MAX_TURNS        = 20;
 // rather than getting them instantly.
 const KV_BUCKET = '53ysgt7NbpDKnhzbkrCZra';
 const KV_BASE = 'https://kvdb.io/'+KV_BUCKET+'/';
-const PRESENCE_STALE_MS = 15000;   // an account with no heartbeat in this long is "offline"
-const PRESENCE_HEARTBEAT_MS = 6000;
-const POLL_INTERVAL_MS = 3000;
+const PRESENCE_STALE_MS = 9000;    // an account with no heartbeat in this long is "offline"
+const PRESENCE_HEARTBEAT_MS = 3500;
+const POLL_INTERVAL_MS = 1200;
 let pnPollTimer=null, pnHeartbeatTimer=null, pnConnected=false;
 const ACOLORS = ['#4a90e2','#306998','#e25c4a','#c0392b','#27ae60','#8e44ad','#e67e22','#16a085','#d35400','#2c3e50','#1abc9c','#e91e63'];
 const ACCENT_COLORS = [
@@ -2177,9 +2177,10 @@ function pnConnectChat(){
   if(pnPollTimer)return; // already running
   setChatOnlinePill('Connecting...',false);
   kvSendHeartbeat();
-  kvPollMessages();kvPollPresence();
+  if(sessionProfile.avatar)kvSaveAvatar(sessionProfile.avatar); // publish this device's avatar choice in case it predates connecting
+  kvPollMessages();kvPollPresence();kvPollAvatars();
   pnHeartbeatTimer=setInterval(kvSendHeartbeat,PRESENCE_HEARTBEAT_MS);
-  pnPollTimer=setInterval(()=>{kvPollMessages();kvPollPresence();},POLL_INTERVAL_MS);
+  pnPollTimer=setInterval(()=>{kvPollMessages();kvPollPresence();kvPollAvatars();},POLL_INTERVAL_MS);
 }
 function pnDisconnectChat(){
   if(pnHeartbeatTimer){clearInterval(pnHeartbeatTimer);pnHeartbeatTimer=null;}
@@ -2188,18 +2189,75 @@ function pnDisconnectChat(){
   pnConnected=false;onlineAccounts=new Set();
   setChatOnlinePill('Offline',false);
 }
+function kvSaveAvatar(dataUrl){
+  if(!sessionKey)return;
+  fetch(KV_BASE+encodeURIComponent('avatar-'+sessionKey),{method:'POST',body:dataUrl})
+    .catch(err=>consoleLog('Avatar sync failed: '+err.message,'error'));
+}
+function kvDeleteAvatar(){
+  if(!sessionKey)return;
+  fetch(KV_BASE+encodeURIComponent('avatar-'+sessionKey),{method:'DELETE'}).catch(()=>{});
+}
+function kvPollAvatars(){
+  fetch(KV_BASE+'?prefix=avatar-&values=true&format=json')
+    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(pairs=>{
+      let changed=false;
+      const seen=new Set();
+      (pairs||[]).forEach(pair=>{
+        const key=pair[0],val=pair[1];
+        const accountKey=key.replace(/^avatar-/,'');
+        seen.add(accountKey);
+        if(typeof val==='string'&&val.startsWith('data:')){
+          if(avatarStore[accountKey]!==val){avatarStore[accountKey]=val;changed=true;}
+        }
+      });
+      // an account with no avatar-* key anymore means it was removed — clear any stale local copy
+      Object.keys(avatarStore).forEach(k=>{if(!seen.has(k)&&k!==sessionKey){delete avatarStore[k];changed=true;}});
+      if(changed){
+        if(activePanel==='users')renderUsers();
+        if(sessionKey&&seen.has(sessionKey)&&avatarStore[sessionKey]&&avatarStore[sessionKey]!==sessionProfile.avatar){
+          sessionProfile.avatar=avatarStore[sessionKey];refreshMyAvatarUI();loadProfilePanel();
+        }
+      }
+    })
+    .catch(err=>consoleLog('Avatar poll failed: '+err.message,'warn'));
+}
 
 // ════════════════════════════════════════════════
 // PROFILE / AVATAR
 // ════════════════════════════════════════════════
+function compressImageToDataUrl(file,maxDim,quality){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onerror=()=>reject(new Error('Could not read file'));
+    reader.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>reject(new Error('Could not decode image'));
+      img.onload=()=>{
+        let w=img.naturalWidth||img.width,h=img.naturalHeight||img.height;
+        const scale=Math.min(1,maxDim/Math.max(w,h));
+        w=Math.max(1,Math.round(w*scale));h=Math.max(1,Math.round(h*scale));
+        const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
+        const ctx=canvas.getContext('2d');ctx.drawImage(img,0,0,w,h);
+        resolve(canvas.toDataURL('image/jpeg',quality));
+      };
+      img.src=reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 function handleAvatarUpload(e){
   const file=e.target.files&&e.target.files[0];if(!file)return;
-  if(file.size>8*1024*1024){showToast('Image must be under 8 MB','error');return;}
-  const reader=new FileReader();
-  reader.onload=function(ev){avatarStore[sessionKey]=ev.target.result;sessionProfile.avatar=ev.target.result;refreshMyAvatarUI();savePersistedProfile();};
-  reader.readAsDataURL(file);e.target.value='';
+  if(file.size>8*1024*1024){showToast('Image must be under 8 MB','error');e.target.value='';return;}
+  compressImageToDataUrl(file,160,0.82).then(dataUrl=>{
+    avatarStore[sessionKey]=dataUrl;sessionProfile.avatar=dataUrl;refreshMyAvatarUI();savePersistedProfile();
+    kvSaveAvatar(dataUrl);
+    showToast('Avatar updated — syncing to everyone','success');
+  }).catch(err=>{showToast('Could not process image: '+err.message,'error');});
+  e.target.value='';
 }
-function removeAvatar(){delete avatarStore[sessionKey];sessionProfile.avatar=null;refreshMyAvatarUI();savePersistedProfile();}
+function removeAvatar(){delete avatarStore[sessionKey];sessionProfile.avatar=null;refreshMyAvatarUI();savePersistedProfile();kvDeleteAvatar();}
 function refreshMyAvatarUI(){
   const av=document.getElementById('my-av'),preview=document.getElementById('edit-av-preview');
   const letter=(sessionProfile.display||'S')[0].toUpperCase(),color=sessionProfile.color||ACOLORS[0],url=sessionProfile.avatar||null;
