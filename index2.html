@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Home - Classroom</title>
+<title>Test Project</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap');
 #code-editor-wrap .CodeMirror{height:100%;font-family:'Share Tech Mono',monospace;font-size:13px;}
@@ -126,8 +126,9 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 #users-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
 .user-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s,background 0.15s;}
 .user-card:hover{border-color:var(--accent);background:var(--bg3);}
-.user-card-av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;color:#fff;flex-shrink:0;font-size:18px;width:48px;height:48px;border:2px solid var(--border2);overflow:hidden;}
+.user-card-av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Rajdhani',sans-serif;font-weight:700;color:#fff;flex-shrink:0;font-size:18px;width:48px;height:48px;border:2px solid var(--border2);overflow:hidden;position:relative;}
 .user-card-av img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.user-online-dot{position:absolute;bottom:-1px;right:-1px;width:12px;height:12px;border-radius:50%;background:var(--green);border:2px solid var(--bg2);}
 .user-card-info{flex:1;min-width:0;}
 .user-card-name{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
 .you-tag{font-size:9px;color:var(--text3);font-family:'Share Tech Mono',monospace;border:1px solid var(--border2);border-radius:3px;padding:1px 5px;}
@@ -622,7 +623,10 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
       <div id="users-panel-inner">
         <div class="panel-hbar">
           <h3>👥 USERS</h3>
-          <span class="count-pill" id="users-count-pill">0 users</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span class="count-pill" id="users-online-pill" style="color:var(--green);border-color:rgba(63,185,80,0.3);background:rgba(63,185,80,0.08);">🟢 0 online</span>
+            <span class="count-pill" id="users-count-pill">0 users</span>
+          </div>
         </div>
         <div id="users-list"></div>
       </div>
@@ -896,10 +900,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
       <div id="settings-panel-inner">
         <div class="settings-hbar">
           <h3>⚙️ SETTINGS</h3>
-          <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);">Snoopy v3.1.4</span>
-            <button class="save-btn" id="settings-save-btn" onclick="saveAllSettings()" style="padding:7px 18px;font-size:13px;">💾 SAVE SETTINGS</button>
-          </div>
+          <span style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);">Snoopy v3.1.4</span>
         </div>
         <div class="settings-body">
           <div class="settings-section">
@@ -1233,7 +1234,6 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pubnub@8.1.1/dist/web/pubnub.min.js"></script>
 <script>
 // ════════════════════════════════════════════════
 // CONSTANTS & CONFIG
@@ -1260,6 +1260,8 @@ const SERP_API_KEYS = [
 const GEMINI_MODELS = [
   {label:'Gemini Robotics ER 1.6 Preview',  id:'gemini-robotics-er-1.6-preview', note:'Stable'},
   {label:'Nano Banana 2',                   id:'gemini-3.1-flash-image', note:'Latest Image Generation'},
+  {label:'Gemini 2.5 Flash',                id:'gemini-2.5-flash',               note:'Still Capable'},
+  {label:'Gemini 2.5 Flash Lite',           id:'gemini-2.5-flash-lite',          note:'Nice'},
   {label:'Gemini 3.1 Flash Lite',           id:'gemini-3.1-flash-lite',          note:'Default and Capable'},
   {label:'Gemini 3.5 Flash',                id:'gemini-3.5-flash',               note:'High Quality'},
   {label:'Gemini 3.6 Flash',                id:'gemini-3.6-flash',               note:'High Quality And Second Latest'},
@@ -1271,40 +1273,30 @@ const DEFAULT_AI_SYSTEM = 'You are Snoopy AI, a helpful, friendly, and knowledge
 let customSystemPrompt = '';
 
 const DIRECT_URLS = {
-  'Bouncy Balls':            'https://bouncyballs.org/',
-  'Discord':                 'https://e.widgetbot.io/channels/1506473982214537236/1506473982709202947/',
-  'DogeUB':                  'https://www.www.ea.e.cool.qzz.io.cdn.cloudflare.net/',
-  'Escape Road':             'https://unblockedescaperoads.com/',
-  'GEOMETRY DASH LITE':      'https://rawcdn.githack.com/genizy/google-class/main/gdlite/index.html',
-  'GN-MATH':                 'https://gn-math.dev',
-  'Haha Games':              'https://hahagames.github.io/crazy-games/',
-  'Horizon':                 'https://horizon--securlydistrict.replit.app/',
-  'Jamal Game Hub':          'https://jamalsgamehubfiletest.pages.dev/',
-  'MIZU':                    'https://math.helenajohansson.net/',
-  'OverCloaked':             'https://s3.amazonaws.com/sadddwasffwaaaasf/https://overyourmom.turbo-education.com/overyourmom.turbo-education.com/index.html',
-  'Paper.io':                'https://goblinkingdev.github.io/paperio2-unblocked/',
-  'Pizza Edition':           'https://pizzaedition.win/',
-  'Rocket Goal':             'https://rocketgoal.io/',
-  'TGLSC Density 5':         'https://blooket.com.iiiii.info/',
-  'VAPOR':                   'https://3fwildcarded.vaporizes.helped.iiiii.info/',
-  'Zodiac':                  'https://cdn.statically.io/gh/darkdragonzxs/zd-pages@main/svg.svg'
+  'Wiki':                   'https://en.wikipedia.org/wiki/Main_Page',
+  'YouTube':                  'https://YouTube.com'
 };
 
 
 const CHAT_STORAGE_KEY    = 'snoopy_chat_v1';
 const SEARCH_HISTORY_KEY  = 'snoopy_search_hist_v1';
 const PROFILE_STORAGE_KEY = 'snoopy_profile_v1';
-const SETTINGS_STORAGE_KEY= 'snoopy_settings_v1';
 const AI_MAX_TURNS        = 20;
 
-// Cross-device chat sync — uses PubNub's public "demo" keyset (no signup
-// required, rate-limited, shared globally). A distinctive channel name
-// keeps collisions with other apps unlikely but not impossible, and there
-// is no message history/persistence on the demo keys — only messages sent
-// while at least one device is connected are relayed live to other devices.
-// For anything beyond a test project, swap in your own free PubNub keys.
-const PN_CHANNEL = 'snoopy-app-x7k2-chat-room';
-let pubnub=null, pnDeviceId=null;
+// Cross-device chat + presence — uses a KVdb.io bucket (a plain key-value
+// REST store, no login/SDK needed) as shared storage that every device
+// polls. This bucket is public/open (no secret_key set), so anyone who
+// knows the bucket ID can read/write it — fine for a test project, but
+// swap to a real backend (or an access-token-protected bucket) before
+// this holds anything you care about being private. There's also no
+// push — devices check for new messages/presence every few seconds
+// rather than getting them instantly.
+const KV_BUCKET = '53ysgt7NbpDKnhzbkrCZra';
+const KV_BASE = 'https://kvdb.io/'+KV_BUCKET+'/';
+const PRESENCE_STALE_MS = 15000;   // an account with no heartbeat in this long is "offline"
+const PRESENCE_HEARTBEAT_MS = 6000;
+const POLL_INTERVAL_MS = 3000;
+let pnPollTimer=null, pnHeartbeatTimer=null, pnConnected=false;
 const ACOLORS = ['#4a90e2','#306998','#e25c4a','#c0392b','#27ae60','#8e44ad','#e67e22','#16a085','#d35400','#2c3e50','#1abc9c','#e91e63'];
 const ACCENT_COLORS = [
   {name:'Blue',   a:'#58a6ff', a2:'#306998', a3:'#4a90e2'},
@@ -1319,6 +1311,7 @@ const ACCENT_COLORS = [
 
 const avatarStore = {};
 let sessionKey=null, sessionProfile={}, curExperience=null, curExperienceEntry=null, curUrl=null;
+let onlineAccounts=new Set();
 let activePanel='experiences', unread=0, aiHistory=[], aiThinking=false;
 let viewingProfileKey=null, allSections={};
 let consoleLogs=[], consoleFilter='all';
@@ -1477,7 +1470,6 @@ function showMain(){
   buildLetterSidebar();buildSections();buildColorPicker();loadProfilePanel();
   loadAndRenderChat();populateModelSelect();buildAccentSwatches();
   loadSearchHistory();updateSerpModeLabel();
-  loadAllSettings();
   const ul=document.getElementById('about-user-lbl');if(ul)ul.textContent='@'+sessionProfile.display;
   sysInfoUptimeStart=Date.now();
   updateGeminiKeyStatus();
@@ -1486,7 +1478,7 @@ function showMain(){
   consoleLog('AI: Gemini Loaded','info');
   brInitTabs();
   pnConnectChat();
-  const history=loadHistory(),joinTxt=sessionProfile.display+' joined';
+  const history=loadChatHistory(),joinTxt=sessionProfile.display+' joined';
   const recentJoin=history.slice(-10).some(m=>m.type==='system'&&m.text===joinTxt&&(Date.now()-new Date(m.time).getTime()<5*60*1000));
   if(!recentJoin)addSystemMsg(joinTxt);
   navTo('experiences');
@@ -1509,7 +1501,7 @@ function logout(){
   pnDisconnectChat();
   sessionKey=null;sessionProfile={};unread=0;aiHistory=[];viewingProfileKey=null;curUrl=null;curExperience=null;curExperienceEntry=null;
   document.getElementById('app').style.display='none';
-  const chatMsgsEl=document.getElementById('chat-messages');if(chatMsgsEl)chatMsgsEl.innerHTML='';
+  document.getElementById('chat-messages').innerHTML='';
   aiClear();brReset();ytStop();
   document.getElementById('li-user').value='';document.getElementById('li-pass').value='';
   document.getElementById('acc-err').textContent='';
@@ -2087,14 +2079,14 @@ function consoleExec(e){
 })();
 
 // ════════════════════════════════════════════════
-// CHAT — synced live across devices via PubNub
+// CHAT — synced live across devices/accounts via a shared KVdb.io bucket
 // ════════════════════════════════════════════════
-function loadHistory(){try{return JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY)||'[]');}catch(e){return[];}}
-function saveHistory(msgs){try{localStorage.setItem(CHAT_STORAGE_KEY,JSON.stringify(msgs.slice(-250)));}catch(e){}}
+function loadChatHistory(){try{return JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY)||'[]');}catch(e){return[];}}
+function saveChatHistory(msgs){try{localStorage.setItem(CHAT_STORAGE_KEY,JSON.stringify(msgs.slice(-250)));}catch(e){}}
 function makeMsgId(){try{return crypto.randomUUID();}catch(e){return 'm'+Date.now()+'-'+Math.random().toString(36).slice(2);}}
-function haveMsg(id){return loadHistory().some(m=>m.id===id);}
-function appendChatMsg(msgObj){const msgs=loadHistory();if(msgObj.id&&msgs.some(m=>m.id===msgObj.id))return;msgs.push(msgObj);saveHistory(msgs);}
-function exportChatLog(){const blob=new Blob([JSON.stringify(loadHistory(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='snoopy-chat.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Exported','success');}
+function haveMsg(id){return loadChatHistory().some(m=>m.id===id);}
+function appendChatMsg(msgObj){const msgs=loadChatHistory();if(msgObj.id&&msgs.some(m=>m.id===msgObj.id))return;msgs.push(msgObj);msgs.sort((a,b)=>(a.ts||0)-(b.ts||0));saveChatHistory(msgs);}
+function exportChatLog(){const blob=new Blob([JSON.stringify(loadChatHistory(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='snoopy-chat.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Exported','success');}
 function renderChatMsgEl(msgObj){
   const cont=document.getElementById('chat-messages');
   if(msgObj.type==='system'){const e=document.createElement('div');e.className='chat-system';e.textContent='— '+msgObj.text+' —';cont.appendChild(e);return;}
@@ -2103,57 +2095,97 @@ function renderChatMsgEl(msgObj){
   e.innerHTML='<div class="chat-msg-name">@'+esc(msgObj.display)+'</div><div class="chat-bubble">'+esc(msgObj.text)+'</div>'+(showTs?'<div class="chat-msg-time">'+esc(msgObj.time)+'</div>':'');
   cont.appendChild(e);
 }
-function loadAndRenderChat(){const cont=document.getElementById('chat-messages');cont.innerHTML='';loadHistory().forEach(m=>renderChatMsgEl(m));cont.scrollTop=cont.scrollHeight;}
+function loadAndRenderChat(){const cont=document.getElementById('chat-messages');cont.innerHTML='';loadChatHistory().forEach(m=>renderChatMsgEl(m));cont.scrollTop=cont.scrollHeight;}
 function updateBadge(){const b=document.getElementById('chat-badge');if(unread>0&&activePanel!=='chat'){b.textContent=unread>9?'9+':String(unread);b.style.display='flex';}else b.style.display='none';}
 function setChatOnlinePill(text,ok){const p=document.getElementById('chat-online-pill');if(!p)return;p.textContent=(ok?'● ':'○ ')+text;p.style.color=ok?'var(--green)':'var(--text3)';p.style.borderColor=ok?'rgba(63,185,80,0.25)':'var(--border2)';}
 function addSystemMsg(text,broadcast){
-  const msgObj={type:'system',id:makeMsgId(),text,time:nowFull()};
+  const msgObj={type:'system',id:makeMsgId(),ts:Date.now(),text,time:nowFull()};
   appendChatMsg(msgObj);renderChatMsgEl(msgObj);document.getElementById('chat-messages').scrollTop=9e9;
-  if(broadcast!==false)pnPublish(msgObj);
+  if(broadcast!==false)kvSendMessage(msgObj);
 }
 function sendChat(){
   const inp=document.getElementById('chat-input'),text=inp.value.trim();if(!text||!sessionKey)return;
   inp.value='';sessionProfile.msgCount=(sessionProfile.msgCount||0)+1;
   const el=document.getElementById('my-msgs');if(el)el.textContent=sessionProfile.msgCount;savePersistedProfile();
-  const msgObj={type:'msg',id:makeMsgId(),key:sessionKey,display:sessionProfile.display,text,time:nowFull()};
+  const msgObj={type:'msg',id:makeMsgId(),ts:Date.now(),key:sessionKey,display:sessionProfile.display,text,time:nowFull()};
   appendChatMsg(msgObj);renderChatMsgEl(msgObj);document.getElementById('chat-messages').scrollTop=9e9;
-  if(activePanel!=='chat'){}else{unread=0;updateBadge();}
-  pnPublish(msgObj);
+  kvSendMessage(msgObj);
 }
-function clearChat(){if(!confirm('Clear all chat history on this device?'))return;clearChatSilent();}
+function clearChat(){if(!confirm('Clear chat history on this device? (Other devices keep their own copy.)'))return;clearChatSilent();}
 function clearChatSilent(){localStorage.removeItem(CHAT_STORAGE_KEY);const el=document.getElementById('chat-messages');if(el)el.innerHTML='';}
 
-// ---- PubNub wiring ----
-function pnPublish(msgObj){
-  if(!pubnub){consoleLog('Chat not connected — message saved locally only','warn');return;}
-  pubnub.publish({channel:PN_CHANNEL,message:msgObj}).catch(err=>{consoleLog('Chat publish failed: '+err.message,'error');});
+// ---- KVdb wiring: shared storage everyone polls (messages + presence) ----
+function kvSendMessage(msgObj){
+  const key='msg-'+msgObj.ts+'-'+msgObj.id;
+  fetch(KV_BASE+encodeURIComponent(key),{method:'POST',body:JSON.stringify(msgObj)})
+    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);})
+    .catch(err=>{consoleLog('Chat send failed (saved locally only): '+err.message,'error');setChatOnlinePill('Send failed — check connection',false);});
+}
+function kvSendHeartbeat(){
+  if(!sessionKey)return;
+  const key='presence-'+sessionKey;
+  const val={display:sessionProfile.display,ts:Date.now()};
+  fetch(KV_BASE+encodeURIComponent(key),{method:'POST',body:JSON.stringify(val)})
+    .catch(err=>consoleLog('Presence heartbeat failed: '+err.message,'warn'));
+}
+function kvPollMessages(){
+  fetch(KV_BASE+'?prefix=msg-&values=true&format=json')
+    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(pairs=>{
+      pnConnected=true;
+      const fresh=[];
+      (pairs||[]).forEach(pair=>{
+        let obj=null;
+        try{obj=typeof pair[1]==='string'?JSON.parse(pair[1]):pair[1];}catch(e){return;}
+        if(!obj||!obj.id)return;
+        if(!haveMsg(obj.id))fresh.push(obj);
+      });
+      fresh.sort((a,b)=>(a.ts||0)-(b.ts||0));
+      fresh.forEach(obj=>{
+        appendChatMsg(obj);renderChatMsgEl(obj);
+        if(obj.type==='msg'&&obj.key!==sessionKey&&activePanel!=='chat'){unread++;updateBadge();}
+      });
+      if(fresh.length)document.getElementById('chat-messages').scrollTop=9e9;
+    })
+    .catch(err=>{
+      pnConnected=false;
+      consoleLog('Chat poll failed: '+err.message,'error');
+      setChatOnlinePill('Connection lost — retrying...',false);
+    });
+}
+function kvPollPresence(){
+  fetch(KV_BASE+'?prefix=presence-&values=true&format=json')
+    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
+    .then(pairs=>{
+      const now=Date.now(),online=new Set();
+      (pairs||[]).forEach(pair=>{
+        const key=pair[0];let val=null;
+        try{val=typeof pair[1]==='string'?JSON.parse(pair[1]):pair[1];}catch(e){return;}
+        if(!val||!val.ts)return;
+        if(now-val.ts>PRESENCE_STALE_MS)return; // stale — treat as offline
+        const accountKey=key.replace(/^presence-/,'');
+        online.add(accountKey);
+      });
+      onlineAccounts=online;
+      if(activePanel==='users')renderUsers();
+      const label=pnConnected?('Live — '+onlineAccounts.size+' online'):'Reconnecting...';
+      setChatOnlinePill(label,pnConnected);
+    })
+    .catch(err=>consoleLog('Presence poll failed: '+err.message,'warn'));
 }
 function pnConnectChat(){
-  if(typeof PubNub==='undefined'){setTimeout(pnConnectChat,200);return;}
-  if(pubnub)return;
-  if(!pnDeviceId){try{pnDeviceId='snoopy-'+crypto.randomUUID();}catch(e){pnDeviceId='snoopy-'+Date.now()+'-'+Math.random().toString(36).slice(2);}}
+  if(pnPollTimer)return; // already running
   setChatOnlinePill('Connecting...',false);
-  pubnub=new PubNub({publishKey:'demo',subscribeKey:'demo',uuid:pnDeviceId});
-  pubnub.addListener({
-    status:(s)=>{
-      if(s.category==='PNConnectedCategory'){setChatOnlinePill('Live — synced across devices',true);}
-      else if(s.category==='PNNetworkDownCategory'||s.category==='PNNetworkIssuesCategory'){setChatOnlinePill('Reconnecting...',false);}
-      else if(s.category==='PNReconnectedCategory'){setChatOnlinePill('Live — synced across devices',true);}
-    },
-    message:(evt)=>{
-      const msgObj=evt.message;if(!msgObj||!msgObj.id)return;
-      if(haveMsg(msgObj.id))return; // already have it (e.g. our own optimistic render)
-      appendChatMsg(msgObj);renderChatMsgEl(msgObj);
-      document.getElementById('chat-messages').scrollTop=9e9;
-      if(msgObj.type==='msg'&&msgObj.key!==sessionKey&&activePanel!=='chat'){unread++;updateBadge();}
-    }
-  });
-  pubnub.subscribe({channels:[PN_CHANNEL]});
+  kvSendHeartbeat();
+  kvPollMessages();kvPollPresence();
+  pnHeartbeatTimer=setInterval(kvSendHeartbeat,PRESENCE_HEARTBEAT_MS);
+  pnPollTimer=setInterval(()=>{kvPollMessages();kvPollPresence();},POLL_INTERVAL_MS);
 }
 function pnDisconnectChat(){
-  if(!pubnub)return;
-  try{pubnub.unsubscribeAll();pubnub.destroy();}catch(e){}
-  pubnub=null;
+  if(pnHeartbeatTimer){clearInterval(pnHeartbeatTimer);pnHeartbeatTimer=null;}
+  if(pnPollTimer){clearInterval(pnPollTimer);pnPollTimer=null;}
+  if(sessionKey)fetch(KV_BASE+encodeURIComponent('presence-'+sessionKey),{method:'DELETE'}).catch(()=>{});
+  pnConnected=false;onlineAccounts=new Set();
   setChatOnlinePill('Offline',false);
 }
 
@@ -2225,17 +2257,27 @@ function renderUsers(){
   const list=document.getElementById('users-list');list.innerHTML='';
   const keys=Object.keys(ACCOUNTS);
   document.getElementById('users-count-pill').textContent=keys.length+' user'+(keys.length!==1?'s':'');
-  keys.sort((a,b)=>{if(a===sessionKey)return -1;if(b===sessionKey)return 1;return(ACCOUNTS[a].display||a).localeCompare(ACCOUNTS[b].display||b);});
+  const onlineCount=keys.filter(k=>onlineAccounts.has(k)).length;
+  const onlinePill=document.getElementById('users-online-pill');
+  if(onlinePill)onlinePill.textContent='🟢 '+onlineCount+' online';
+  keys.sort((a,b)=>{
+    if(a===sessionKey)return -1;if(b===sessionKey)return 1;
+    const aOn=onlineAccounts.has(a),bOn=onlineAccounts.has(b);
+    if(aOn!==bOn)return aOn?-1:1;
+    return(ACCOUNTS[a].display||a).localeCompare(ACCOUNTS[b].display||b);
+  });
   keys.forEach(k=>{
     const acct=ACCOUNTS[k],isMe=(k===sessionKey);
+    const isOnline=isMe||onlineAccounts.has(k);
     const display=isMe?sessionProfile.display:acct.display,color=isMe?sessionProfile.color:(acct.color||ACOLORS[0]);
     const bio=isMe?sessionProfile.bio:(acct.bio||''),isOwner=acct.isOwner||false,isAdmin=acct.isAdmin||false;
     const avatarUrl=isMe?sessionProfile.avatar:avatarStore[k]||null;
     const card=document.createElement('div');card.className='user-card';
     const avEl=document.createElement('div');avEl.className='user-card-av';avEl.style.background=color;
     if(avatarUrl)avEl.innerHTML='<img src="'+avatarUrl+'" alt="av">';else avEl.textContent=(display||'?')[0].toUpperCase();
+    if(isOnline){const dot=document.createElement('span');dot.className='user-online-dot';dot.title='Online now';avEl.appendChild(dot);}
     const info=document.createElement('div');info.className='user-card-info';
-    info.innerHTML='<div class="user-card-name">'+esc(display)+(isOwner?'<span class="owner-tag">★ OWNER</span>':'')+(isAdmin?'<span class="admin-tag">⚙ ADMIN</span>':'')+(isMe?'<span class="you-tag">YOU</span>':'')+'</div><div class="user-card-handle">@'+esc(display)+'</div><div class="user-card-bio">'+(bio?esc(bio):'<em style="opacity:0.5">No bio set.</em>')+'</div>';
+    info.innerHTML='<div class="user-card-name">'+esc(display)+(isOwner?'<span class="owner-tag">★ OWNER</span>':'')+(isAdmin?'<span class="admin-tag">⚙ ADMIN</span>':'')+(isMe?'<span class="you-tag">YOU</span>':'')+(isOnline&&!isMe?'<span class="settings-tag green" style="padding:1px 5px;">● ONLINE</span>':'')+'</div><div class="user-card-handle">@'+esc(display)+'</div><div class="user-card-bio">'+(bio?esc(bio):'<em style="opacity:0.5">No bio set.</em>')+'</div>';
     const hint=document.createElement('span');hint.className='view-profile-hint';hint.textContent=isMe?'My Profile ›':'View ›';
     card.appendChild(avEl);card.appendChild(info);card.appendChild(hint);
     if(isMe)card.onclick=()=>navTo('profile');else card.onclick=()=>openUserProfileModal(k);
@@ -2274,68 +2316,12 @@ function buildAccentSwatches(){
   const cont=document.getElementById('accent-swatches');if(!cont)return;cont.innerHTML='';
   ACCENT_COLORS.forEach((ac,i)=>{
     const sw=document.createElement('div');sw.className='acc-swatch'+(i===0?' selected':'');sw.style.background=ac.a3;sw.title=ac.name;
-    sw.dataset.idx=i;
     sw.onclick=()=>{document.querySelectorAll('.acc-swatch').forEach(s=>s.classList.remove('selected'));sw.classList.add('selected');const r=document.documentElement;r.style.setProperty('--accent',ac.a3);r.style.setProperty('--accent2',ac.a2);r.style.setProperty('--accent3',ac.a);showToast('Accent: '+ac.name,'info');};
     cont.appendChild(sw);
   });
 }
 function clearAllData(){if(!confirm('Wipe ALL local data?'))return;localStorage.clear();GEMINI_API_KEY='';searchHistory=[];updateGeminiKeyStatus();showToast('All data cleared','info');}
 function toggleLetterSidebar(show){if(activePanel==='experiences')document.getElementById('letter-sidebar').style.display=show?'flex':'none';}
-
-// ---- Settings persistence (Save Settings button) ----
-function saveAllSettings(){
-  const accSel=document.querySelector('.acc-swatch.selected');
-  const settings={
-    theme:document.getElementById('set-theme')?.value,
-    accentIdx:accSel?accSel.dataset.idx:null,
-    customAccent:document.getElementById('set-custom-accent')?.value,
-    fontSize:document.getElementById('set-fontsize')?.value,
-    compact:document.getElementById('set-compact')?.checked,
-    animations:document.getElementById('set-anim')?.checked,
-    gridBg:document.getElementById('set-grid-bg')?.checked,
-    aiModel:document.getElementById('set-ai-model')?.value,
-    aiTemp:document.getElementById('set-ai-temp')?.value,
-    systemPrompt:customSystemPrompt,
-    serpMode:document.getElementById('set-serp-mode')?.value,
-    serpNum:document.getElementById('set-serp-num')?.value,
-    safeSearch:document.getElementById('set-safe-search')?.checked,
-    showTimestamps:document.getElementById('set-timestamps')?.checked,
-    experienceOpen:document.getElementById('set-experience-open')?.value,
-    experienceSort:document.getElementById('set-experience-sort')?.value,
-    letterSidebar:document.getElementById('set-letter-sidebar')?.checked,
-    toastPos:document.getElementById('set-toast-pos')?.value,
-    toastDur:document.getElementById('set-toast-dur')?.value
-  };
-  try{localStorage.setItem(SETTINGS_STORAGE_KEY,JSON.stringify(settings));showToast('Settings saved ✓','success');}
-  catch(e){showToast('Could not save settings','error');}
-}
-function loadAllSettings(){
-  let s=null;try{s=JSON.parse(localStorage.getItem(SETTINGS_STORAGE_KEY)||'null');}catch(e){}
-  if(!s)return;
-  if(s.theme){const el=document.getElementById('set-theme');if(el){el.value=s.theme;applyTheme(s.theme);}}
-  if(s.accentIdx!==null&&s.accentIdx!==undefined){
-    const sw=document.querySelector('.acc-swatch[data-idx="'+s.accentIdx+'"]');
-    if(sw)sw.click();
-  }
-  if(s.customAccent){const el=document.getElementById('set-custom-accent');if(el)el.value=s.customAccent;}
-  if(s.fontSize){const el=document.getElementById('set-fontsize');if(el){el.value=s.fontSize;applyFontSize(s.fontSize);}}
-  if(s.compact){const el=document.getElementById('set-compact');if(el){el.checked=true;toggleCompact(true);}}
-  if(s.animations===false){const el=document.getElementById('set-anim');if(el){el.checked=false;toggleAnimations(false);}}
-  if(s.gridBg===false){const el=document.getElementById('set-grid-bg');if(el){el.checked=false;toggleGridBg(false);}}
-  if(s.aiModel){selectedModelId=s.aiModel;}
-  if(s.aiTemp){const el=document.getElementById('set-ai-temp');if(el){el.value=s.aiTemp;const v=document.getElementById('ai-temp-val');if(v)v.textContent=(s.aiTemp/10).toFixed(1);}}
-  if(s.systemPrompt){customSystemPrompt=s.systemPrompt;}
-  if(s.serpMode){const el=document.getElementById('set-serp-mode');if(el)el.value=s.serpMode;}
-  if(s.serpNum){const el=document.getElementById('set-serp-num');if(el)el.value=s.serpNum;}
-  if(s.safeSearch===false){const el=document.getElementById('set-safe-search');if(el)el.checked=false;}
-  if(s.showTimestamps===false){const el=document.getElementById('set-timestamps');if(el)el.checked=false;}
-  if(s.experienceOpen){const el=document.getElementById('set-experience-open');if(el)el.value=s.experienceOpen;}
-  if(s.experienceSort){const el=document.getElementById('set-experience-sort');if(el){el.value=s.experienceSort;applyExperienceSort(s.experienceSort);}}
-  if(s.letterSidebar===false){const el=document.getElementById('set-letter-sidebar');if(el){el.checked=false;toggleLetterSidebar(false);}}
-  if(s.toastPos){const el=document.getElementById('set-toast-pos');if(el){el.value=s.toastPos;applyToastPos(s.toastPos);}}
-  if(s.toastDur){const el=document.getElementById('set-toast-dur');if(el)el.value=s.toastDur;}
-  populateModelSelect();
-}
 
 // ════════════════════════════════════════════════
 // INIT
