@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Test Project 2</title>
+<title>Test Project</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap');
 #code-editor-wrap .CodeMirror{height:100%;font-family:'Share Tech Mono',monospace;font-size:13px;}
@@ -339,6 +339,13 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 .yt-stop-btn{padding:4px 10px;background:transparent;border:1px solid var(--border2);border-radius:5px;color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer;transition:all 0.15s;white-space:nowrap;}
 .yt-stop-btn:hover{border-color:var(--red);color:#e07777;}
 #yt-iframe{flex:1;border:none;width:100%;background:#000;}
+#shorts-feed{flex:1;overflow-y:scroll;scroll-snap-type:y mandatory;scroll-behavior:smooth;scrollbar-width:none;background:#000;}
+#shorts-feed::-webkit-scrollbar{display:none;}
+.short-item{scroll-snap-align:start;scroll-snap-stop:always;height:100%;width:100%;display:flex;align-items:center;justify-content:center;position:relative;background:#000;border-bottom:1px solid #111;}
+.short-item iframe{width:100%;max-width:400px;height:100%;border:none;}
+.short-remove-btn{position:absolute;top:14px;right:14px;background:rgba(0,0,0,0.65);color:#fff;border:1px solid rgba(255,255,255,0.35);border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:14px;line-height:1;z-index:2;}
+.short-remove-btn:hover{background:rgba(224,85,85,0.7);}
+.short-empty{color:#666;text-align:center;padding:50px 20px;font-family:'Share Tech Mono',monospace;font-size:12px;height:100%;display:flex;align-items:center;justify-content:center;}
 #sysinfo-panel-inner{display:flex;flex-direction:column;height:100%;background:var(--bg);overflow-y:auto;}
 .sysinfo-hbar{background:var(--bg2);padding:13px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
 .sysinfo-hbar h3{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:#34d399;letter-spacing:2px;}
@@ -568,6 +575,9 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
       <button class="nav-btn yt-nav" id="nav-youtube" onclick="navTo('youtube')">
         <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor" stroke="none"/></svg>YT
       </button>
+      <button class="nav-btn yt-nav" id="nav-ytshorts" onclick="navTo('ytshorts')">
+        <svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><polygon points="10 9 15 12 10 15" fill="currentColor" stroke="none"/></svg>SHORTS
+      </button>
       <div class="nav-sep"></div>
       <button class="nav-btn sys-nav" id="nav-sysinfo" onclick="navTo('sysinfo')">
         <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>SYS
@@ -764,6 +774,17 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
             <iframe id="yt-iframe" src="about:blank" allow="autoplay; fullscreen; encrypted-media; picture-in-picture" allowfullscreen></iframe>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- YT SHORTS -->
+    <div class="panel" id="panel-ytshorts">
+      <div style="display:flex;flex-direction:column;height:100%;background:#000;">
+        <div class="yt-hbar">
+          <h3>🔻 YT SHORTS</h3>
+          <span class="yt-badge">SCROLL FEED</span>
+        </div>
+        <div id="shorts-feed"></div>
       </div>
     </div>
 
@@ -1279,6 +1300,7 @@ const DIRECT_URLS = {
 
 
 const CHAT_STORAGE_KEY    = 'snoopy_chat_v1';
+const CHAT_CLEARED_KEY    = 'snoopy_chat_cleared_before';
 const SEARCH_HISTORY_KEY  = 'snoopy_search_hist_v1';
 const PROFILE_STORAGE_KEY = 'snoopy_profile_v1';
 const AI_MAX_TURNS        = 20;
@@ -1312,6 +1334,7 @@ const ACCENT_COLORS = [
 const avatarStore = {};
 let sessionKey=null, sessionProfile={}, curExperience=null, curExperienceEntry=null, curUrl=null;
 let onlineAccounts=new Set();
+let shortsInitialized=false;
 let activePanel='experiences', unread=0, aiHistory=[], aiThinking=false;
 let viewingProfileKey=null, allSections={};
 let consoleLogs=[], consoleFilter='all';
@@ -1510,7 +1533,7 @@ function logout(){
 }
 
 function navTo(p){
-  ['experiences','chat','users','ai','browser','youtube','sysinfo','profile','settings','console','code'].forEach(x=>{
+  ['experiences','chat','users','ai','browser','youtube','ytshorts','sysinfo','profile','settings','console','code'].forEach(x=>{
     const nb=document.getElementById('nav-'+x),pb=document.getElementById('panel-'+x);
     if(nb)nb.classList.toggle('active',x===p);
     if(pb)pb.classList.toggle('active',x===p);
@@ -1530,6 +1553,7 @@ function navTo(p){
   if(p==='sysinfo'){refreshSysInfo();startSysInfoClock();}
   else if(sysInfoClockInterval){clearInterval(sysInfoClockInterval);sysInfoClockInterval=null;}
   if(p==='youtube')setTimeout(()=>document.getElementById('yt-url-input').focus(),50);
+  if(p==='ytshorts'){if(!shortsInitialized){loadShorts();renderShorts();shortsInitialized=true;}}
 }
 
 // ════════════════════════════════════════════════
@@ -1667,6 +1691,37 @@ function ytOpenExternal(){
 
 function ytOpenNativeSearch(){
   window.open('https://www.youtube.com/','_blank','noopener,noreferrer');
+}
+
+// ════════════════════════════════════════════════
+// YT SHORTS — vertical scrolling feed
+// ════════════════════════════════════════════════
+// A handful of example Shorts to start the feed with. YouTube IDs can stop
+// working if a video gets taken down, so treat these as placeholders — use
+// the "+ ADD" box in the panel to drop in your own Shorts links/IDs.
+const YT_SHORTS_DEFAULT = ['kJlp_KjQD74','r_mI-_Wb-9Y','pVRefGmQDJM'];
+const SHORTS_STORAGE_KEY = 'snoopy_shorts_v1';
+let ytShorts = [];
+function loadShorts(){
+  ytShorts = YT_SHORTS_DEFAULT; // sourced straight from the array above — edit that list to change what shows
+}
+function renderShorts(){
+  const feed=document.getElementById('shorts-feed');if(!feed)return;
+  if(!ytShorts.length){feed.innerHTML='<div class="short-empty">No shorts in the code yet — add IDs to YT_SHORTS_DEFAULT.</div>';return;}
+  feed.innerHTML='';
+  ytShorts.forEach((id)=>{
+    const item=document.createElement('div');item.className='short-item';
+    const iframeEl=document.createElement('iframe');
+    iframeEl.src='https://www.youtube-nocookie.com/embed/'+id+'?rel=0&modestbranding=1&playsinline=1';
+    iframeEl.allow='autoplay; encrypted-media; picture-in-picture';
+    iframeEl.allowFullscreen=true;
+    iframeEl.loading='lazy';
+    item.appendChild(iframeEl);
+    feed.appendChild(item);
+  });
+}
+function removeShort(idx){
+  ytShorts.splice(idx,1);saveShorts();renderShorts();
 }
 
 // ════════════════════════════════════════════════
@@ -2112,7 +2167,12 @@ function sendChat(){
   kvSendMessage(msgObj);
 }
 function clearChat(){if(!confirm('Clear chat history on this device? (Other devices keep their own copy.)'))return;clearChatSilent();}
-function clearChatSilent(){localStorage.removeItem(CHAT_STORAGE_KEY);const el=document.getElementById('chat-messages');if(el)el.innerHTML='';}
+function getChatClearedBefore(){try{return parseInt(localStorage.getItem(CHAT_CLEARED_KEY)||'0',10)||0;}catch(e){return 0;}}
+function clearChatSilent(){
+  try{localStorage.setItem(CHAT_CLEARED_KEY,String(Date.now()));}catch(e){}
+  localStorage.removeItem(CHAT_STORAGE_KEY);
+  const el=document.getElementById('chat-messages');if(el)el.innerHTML='';
+}
 
 // ---- KVdb wiring: shared storage everyone polls (messages + presence) ----
 function kvSendMessage(msgObj){
@@ -2129,6 +2189,7 @@ function kvSendHeartbeat(){
     .catch(err=>consoleLog('Presence heartbeat failed: '+err.message,'warn'));
 }
 function kvPollMessages(){
+  const clearedBefore=getChatClearedBefore();
   fetch(KV_BASE+'?prefix=msg-&values=true&format=json')
     .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
     .then(pairs=>{
@@ -2138,6 +2199,7 @@ function kvPollMessages(){
         let obj=null;
         try{obj=typeof pair[1]==='string'?JSON.parse(pair[1]):pair[1];}catch(e){return;}
         if(!obj||!obj.id)return;
+        if(obj.ts&&obj.ts<=clearedBefore)return; // hidden by a local "Clear" on this device
         if(!haveMsg(obj.id))fresh.push(obj);
       });
       fresh.sort((a,b)=>(a.ts||0)-(b.ts||0));
