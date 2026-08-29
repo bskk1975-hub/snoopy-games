@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Test Project</title>
+<title>Home - Classroom</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap');
 #code-editor-wrap .CodeMirror{height:100%;font-family:'Share Tech Mono',monospace;font-size:13px;}
@@ -1281,8 +1281,6 @@ const SERP_API_KEYS = [
 const GEMINI_MODELS = [
   {label:'Gemini Robotics ER 1.6 Preview',  id:'gemini-robotics-er-1.6-preview', note:'Stable'},
   {label:'Nano Banana 2',                   id:'gemini-3.1-flash-image', note:'Latest Image Generation'},
-  {label:'Gemini 2.5 Flash',                id:'gemini-2.5-flash',               note:'Still Capable'},
-  {label:'Gemini 2.5 Flash Lite',           id:'gemini-2.5-flash-lite',          note:'Nice'},
   {label:'Gemini 3.1 Flash Lite',           id:'gemini-3.1-flash-lite',          note:'Default and Capable'},
   {label:'Gemini 3.5 Flash',                id:'gemini-3.5-flash',               note:'High Quality'},
   {label:'Gemini 3.6 Flash',                id:'gemini-3.6-flash',               note:'High Quality And Second Latest'},
@@ -1294,8 +1292,23 @@ const DEFAULT_AI_SYSTEM = 'You are Snoopy AI, a helpful, friendly, and knowledge
 let customSystemPrompt = '';
 
 const DIRECT_URLS = {
-  'Wiki':                   'https://en.wikipedia.org/wiki/Main_Page',
-  'YouTube':                  'https://YouTube.com'
+  'Bouncy Balls':            'https://bouncyballs.org/',
+  'Discord':                 'https://e.widgetbot.io/channels/1506473982214537236/1506473982709202947/',
+  'DogeUB':                  'https://www.www.ea.e.cool.qzz.io.cdn.cloudflare.net/',
+  'Escape Road':             'https://unblockedescaperoads.com/',
+  'GEOMETRY DASH LITE':      'https://rawcdn.githack.com/genizy/google-class/main/gdlite/index.html',
+  'GN-MATH':                 'https://gn-math.dev',
+  'Haha Games':              'https://hahagames.github.io/crazy-games/',
+  'Horizon':                 'https://horizon--securlydistrict.replit.app/',
+  'Jamal Game Hub':          'https://jamalsgamehubfiletest.pages.dev/',
+  'MIZU':                    'https://math.helenajohansson.net/',
+  'OverCloaked':             'https://s3.amazonaws.com/sadddwasffwaaaasf/https://overyourmom.turbo-education.com/overyourmom.turbo-education.com/index.html',
+  'Paper.io':                'https://goblinkingdev.github.io/paperio2-unblocked/',
+  'Pizza Edition':           'https://pizzaedition.win/',
+  'Rocket Goal':             'https://rocketgoal.io/',
+  'TGLSC Density 5':         'https://blooket.com.iiiii.info/',
+  'VAPOR':                   'https://3fwildcarded.vaporizes.helped.iiiii.info/',
+  'Zodiac':                  'https://cdn.statically.io/gh/darkdragonzxs/zd-pages@main/svg.svg'
 };
 
 
@@ -1553,7 +1566,8 @@ function navTo(p){
   if(p==='sysinfo'){refreshSysInfo();startSysInfoClock();}
   else if(sysInfoClockInterval){clearInterval(sysInfoClockInterval);sysInfoClockInterval=null;}
   if(p==='youtube')setTimeout(()=>document.getElementById('yt-url-input').focus(),50);
-  if(p==='ytshorts'){if(!shortsInitialized){loadShorts();renderShorts();shortsInitialized=true;}}
+  if(p==='ytshorts'){if(!shortsInitialized){loadShorts();renderShorts();shortsInitialized=true;}else{shortsRestartObserver();}}
+  else{shortsPauseAll();}
 }
 
 // ════════════════════════════════════════════════
@@ -1696,29 +1710,80 @@ function ytOpenNativeSearch(){
 // ════════════════════════════════════════════════
 // YT SHORTS — vertical scrolling feed
 // ════════════════════════════════════════════════
-// A handful of example Shorts to start the feed with. YouTube IDs can stop
+// A larger pool of example Shorts to start the feed with. YouTube IDs can stop
 // working if a video gets taken down, so treat these as placeholders — use
 // the "+ ADD" box in the panel to drop in your own Shorts links/IDs.
-const YT_SHORTS_DEFAULT = ['kJlp_KjQD74','r_mI-_Wb-9Y','pVRefGmQDJM'];
+const YT_SHORTS_DEFAULT = [
+  'kJlp_KjQD74','r_mI-_Wb-9Y','pVRefGmQDJM','R1J2xkoNgGY','Kkuz44WPZKA',
+  '2Yce5DPvOoc','xX2t8sQ29G0','8j1cAlxnPI0','FIhi8HRi1kQ','2zNSgSzhBfM',
+  'nfWlot6h_JM','vSX3IRxGnNY','8UVNT4wvIGY','JZG_kd6vN2A','tntOCGkgt98'
+];
 const SHORTS_STORAGE_KEY = 'snoopy_shorts_v1';
 let ytShorts = [];
+let shortsObserver = null;
+let shortsActiveIdx = -1;
 function loadShorts(){
   ytShorts = YT_SHORTS_DEFAULT; // sourced straight from the array above — edit that list to change what shows
 }
+function shortsEmbedSrc(id){
+  return 'https://www.youtube-nocookie.com/embed/'+id+'?rel=0&modestbranding=1&playsinline=1&enablejsapi=1&mute=1';
+}
 function renderShorts(){
   const feed=document.getElementById('shorts-feed');if(!feed)return;
+  if(shortsObserver){shortsObserver.disconnect();shortsObserver=null;}
+  shortsActiveIdx=-1;
   if(!ytShorts.length){feed.innerHTML='<div class="short-empty">No shorts in the code yet — add IDs to YT_SHORTS_DEFAULT.</div>';return;}
   feed.innerHTML='';
-  ytShorts.forEach((id)=>{
-    const item=document.createElement('div');item.className='short-item';
+  ytShorts.forEach((id,idx)=>{
+    const item=document.createElement('div');item.className='short-item';item.dataset.idx=idx;
     const iframeEl=document.createElement('iframe');
-    iframeEl.src='https://www.youtube-nocookie.com/embed/'+id+'?rel=0&modestbranding=1&playsinline=1';
+    iframeEl.src=shortsEmbedSrc(id);
     iframeEl.allow='autoplay; encrypted-media; picture-in-picture';
     iframeEl.allowFullscreen=true;
     iframeEl.loading='lazy';
+    iframeEl.dataset.videoId=id;
     item.appendChild(iframeEl);
     feed.appendChild(item);
   });
+  shortsStartObserver();
+}
+function shortsPlayerCmd(iframeEl,func,args){
+  if(!iframeEl||!iframeEl.contentWindow)return;
+  try{iframeEl.contentWindow.postMessage(JSON.stringify({event:'command',func,args:args||[]}),'*');}catch(e){}
+}
+function shortsPauseAll(){
+  document.querySelectorAll('#shorts-feed .short-item iframe').forEach(f=>shortsPlayerCmd(f,'pauseVideo'));
+  shortsActiveIdx=-1;
+}
+function shortsPlayIdx(idx){
+  const items=document.querySelectorAll('#shorts-feed .short-item');
+  items.forEach((item,i)=>{
+    const f=item.querySelector('iframe');if(!f)return;
+    if(i===idx)shortsPlayerCmd(f,'playVideo');
+    else shortsPlayerCmd(f,'pauseVideo');
+  });
+  shortsActiveIdx=idx;
+}
+function shortsStartObserver(){
+  const feed=document.getElementById('shorts-feed');if(!feed)return;
+  if(shortsObserver)shortsObserver.disconnect();
+  shortsObserver=new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      const idx=parseInt(entry.target.dataset.idx,10);
+      const f=entry.target.querySelector('iframe');if(!f)return;
+      if(entry.isIntersecting&&entry.intersectionRatio>0.6){
+        if(shortsActiveIdx!==idx)shortsPlayIdx(idx);
+      }else if(idx===shortsActiveIdx){
+        shortsPlayerCmd(f,'pauseVideo');
+      }
+    });
+  },{root:feed,threshold:[0,0.6,1]});
+  document.querySelectorAll('#shorts-feed .short-item').forEach(item=>shortsObserver.observe(item));
+}
+function shortsRestartObserver(){
+  // called when navigating back into the Shorts tab so the currently
+  // visible item resumes and everything else stays paused
+  shortsStartObserver();
 }
 function removeShort(idx){
   ytShorts.splice(idx,1);saveShorts();renderShorts();
