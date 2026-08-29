@@ -745,7 +745,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
       <div id="youtube-panel-inner">
         <div class="yt-hbar">
           <h3>▶ YOUTUBE</h3>
-          <span class="yt-badge">INLINE PLAYER</span>
+          <span class="yt-badge">Video And Shorts PLAYER</span>
         </div>
         <div class="yt-url-bar">
           <input class="yt-url-input" id="yt-url-input" placeholder="Paste YouTube URL or video ID — e.g. https://youtu.be/dQw4w9WgXcQ" onkeydown="if(event.key==='Enter')ytLoad()"/>
@@ -781,7 +781,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
     <div class="panel" id="panel-ytshorts">
       <div style="display:flex;flex-direction:column;height:100%;background:#000;">
         <div class="yt-hbar">
-          <h3>🔻 YT SHORTS</h3>
+          <h3>YT SHORTS DOOMSCROLLING</h3>
           <span class="yt-badge">SCROLL FEED</span>
         </div>
         <div id="shorts-feed"></div>
@@ -1034,7 +1034,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
               </select>
             </div>
             <div class="settings-row">
-              <div class="settings-row-left"><div class="settings-row-label">Safe Search (BETA)</div></div>
+              <div class="settings-row-left"><div class="settings-row-label">Safe Search</div></div>
               <label class="sn-toggle"><input type="checkbox" id="set-safe-search" checked/><span class="sn-slider"></span></label>
             </div>
             <div class="settings-row">
@@ -1046,7 +1046,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
           <div class="settings-section">
             <div class="settings-section-hdr">
               <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              <span class="settings-section-title">CHAT (BETA)</span>
+              <span class="settings-section-title">CHAT</span>
             </div>
             <div class="settings-row">
               <div class="settings-row-left"><div class="settings-row-label">Show Timestamps</div></div>
@@ -1714,10 +1714,27 @@ function ytOpenNativeSearch(){
 // working if a video gets taken down, so treat these as placeholders — use
 // the "+ ADD" box in the panel to drop in your own Shorts links/IDs.
 const YT_SHORTS_DEFAULT = [
-  'kJlp_KjQD74','r_mI-_Wb-9Y','pVRefGmQDJM','R1J2xkoNgGY','Kkuz44WPZKA',
-  '2Yce5DPvOoc','xX2t8sQ29G0','8j1cAlxnPI0','FIhi8HRi1kQ','2zNSgSzhBfM',
-  'nfWlot6h_JM','vSX3IRxGnNY','8UVNT4wvIGY','JZG_kd6vN2A','tntOCGkgt98'
+  'kJlp_KjQD74',
+  'r_mI-_Wb-9Y',
+  'pVRefGmQDJM',
+  'R1J2xkoNgGY',
+  'Kkuz44WPZKA',
+  '2Yce5DPvOoc',
+  'xX2t8sQ29G0',
+  '8j1cAlxnPI0',
+  'FIhi8HRi1kQ',
+  '2zNSgSzhBfM',
+  'nfWlot6h_JM',
+  'vSX3IRxGnNY',
+  '8UVNT4wvIGY',
+  'JZG_kd6vN2A',
+  'tntOCGkgt98',
+  'hf-EwRxk3qU',
+  'ol5MvGz0VW4',
+  'HJkunyt6Vl0',
+  'X-VK2bbUHus'
 ];
+
 const SHORTS_STORAGE_KEY = 'snoopy_shorts_v1';
 let ytShorts = [];
 let shortsObserver = null;
