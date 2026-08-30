@@ -89,8 +89,13 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 .letter-line{flex:1;height:1px;background:var(--border);}
 .letter-count{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);}
 .experience-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:8px;}
-.experience-btn{background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;padding:11px 13px;cursor:pointer;text-align:left;transition:all 0.15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.experience-btn{background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Exo 2',sans-serif;font-size:13px;font-weight:600;padding:11px 13px;cursor:pointer;text-align:left;transition:all 0.15s;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;justify-content:space-between;gap:6px;}
 .experience-btn:hover{background:var(--bg3);border-color:var(--accent);color:var(--accent3);}
+.experience-btn-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
+.experience-fav-star{flex-shrink:0;background:none;border:none;cursor:pointer;font-size:14px;line-height:1;padding:0 0 0 4px;color:var(--text3);opacity:0.6;transition:all 0.15s;}
+.experience-fav-star:hover{opacity:1;transform:scale(1.15);}
+.experience-fav-star.faved{color:#fbbf24;opacity:1;}
+.letter-label.fav-label{color:#fbbf24;}
 #no-results{display:none;text-align:center;color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:13px;padding:50px 0;}
 #chat-panel-inner{display:flex;flex-direction:column;height:100%;background:var(--bg);}
 .chat-hbar{background:var(--bg2);padding:13px 18px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between;}
@@ -99,6 +104,11 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 .chat-online-pill{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);background:rgba(63,185,80,0.1);border:1px solid rgba(63,185,80,0.25);border-radius:20px;padding:3px 10px;}
 .chat-clr-btn{padding:4px 10px;background:transparent;border:1px solid var(--border2);border-radius:5px;color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer;transition:all 0.15s;letter-spacing:1px;}
 .chat-clr-btn:hover{border-color:var(--red);color:#e07777;}
+.chat-search-input{padding:5px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:10px;outline:none;width:140px;transition:border-color 0.2s,width 0.2s;}
+.chat-search-input:focus{border-color:var(--accent);width:180px;}
+.chat-emoji-row{display:flex;gap:4px;padding:6px 12px;background:var(--bg2);border-top:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.chat-emoji-btn{background:transparent;border:1px solid transparent;border-radius:6px;font-size:16px;padding:2px 6px;cursor:pointer;transition:all 0.12s;}
+.chat-emoji-btn:hover{background:var(--bg3);border-color:var(--border2);transform:scale(1.15);}
 #chat-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:6px;}
 #chat-messages::-webkit-scrollbar{width:4px;}
 #chat-messages::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
@@ -394,6 +404,26 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 .settings-btn.danger{border-color:rgba(224,85,85,0.4);color:#e07777;}
 .settings-btn.danger:hover{background:rgba(224,85,85,0.1);border-color:var(--red);}
 .settings-version{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);padding:16px 18px;text-align:center;border-top:1px solid var(--border);}
+.note-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;}
+.note-card-text{font-size:13px;color:var(--text);line-height:1.5;white-space:pre-wrap;word-break:break-word;padding-right:26px;}
+.note-card-ts{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text3);margin-top:8px;}
+.note-del-btn{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;}
+.note-del-btn:hover{color:#e07777;}
+.notes-empty,.todo-empty{text-align:center;color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:12px;padding:40px 0;}
+.todo-item{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:11px 14px;display:flex;align-items:center;gap:12px;}
+.todo-check{width:19px;height:19px;flex-shrink:0;cursor:pointer;accent-color:var(--accent);}
+.todo-text{flex:1;font-size:13px;color:var(--text);word-break:break-word;}
+.todo-text.done{text-decoration:line-through;color:var(--text3);}
+.todo-del-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;flex-shrink:0;}
+.todo-del-btn:hover{color:#e07777;}
+.calc-btn{padding:16px 0;border-radius:9px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;cursor:pointer;transition:all 0.12s;}
+.calc-btn:hover{background:var(--bg3);border-color:var(--accent);}
+.calc-btn.op{background:rgba(88,166,255,0.1);color:var(--accent3);border-color:rgba(88,166,255,0.3);}
+.calc-btn.eq{background:var(--accent2);color:#fff;border-color:var(--accent);}
+.calc-btn.eq:hover{background:var(--accent);}
+.calc-btn.clr{color:#f87171;border-color:rgba(248,113,113,0.3);}
+.calc-hist-item{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text3);padding:6px 8px;border-bottom:1px solid var(--border);cursor:pointer;word-break:break-all;}
+.calc-hist-item:hover{color:var(--accent3);}
 .settings-kbd{background:var(--bg3);border:1px solid var(--border2);border-radius:4px;padding:2px 7px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text2);}
 .settings-tag{font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 9px;border-radius:4px;border:1px solid;flex-shrink:0;white-space:nowrap;}
 .settings-tag.green{color:var(--green);border-color:rgba(63,185,80,0.4);background:rgba(63,185,80,0.08);}
@@ -593,6 +623,19 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>SET
       </button>
       <div class="nav-sep"></div>
+      <button class="nav-btn" id="nav-notes" onclick="navTo('notes')">
+        <svg viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="16" x2="13" y2="16"/></svg>NOTES
+      </button>
+      <button class="nav-btn" id="nav-todo" onclick="navTo('todo')">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>TODO
+      </button>
+      <button class="nav-btn" id="nav-timer" onclick="navTo('timer')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6"/></svg>TIMER
+      </button>
+      <button class="nav-btn" id="nav-calc" onclick="navTo('calc')">
+        <svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8" y2="11.01"/><line x1="12" y1="11" x2="12" y2="11.01"/><line x1="16" y1="11" x2="16" y2="11.01"/><line x1="8" y1="15" x2="8" y2="15.01"/><line x1="12" y1="15" x2="12" y2="15.01"/><line x1="16" y1="15" x2="16" y2="15.01"/><line x1="8" y1="19" x2="8" y2="19.01"/><line x1="12" y1="19" x2="16" y2="19"/></svg>CALC
+      </button>
+      <div class="nav-sep"></div>
       <button class="nav-btn" id="nav-code" onclick="navTo('code')">
         <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>CODE
       </button>
@@ -616,11 +659,15 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
         <div class="chat-hbar">
           <h3>💬 CHAT</h3>
           <div class="chat-hbar-right">
+            <input id="chat-search" class="chat-search-input" placeholder="🔍 Filter messages..." oninput="filterChatMessages()"/>
             <span class="chat-online-pill" id="chat-online-pill">● Connecting...</span>
+            <button class="chat-clr-btn" onclick="exportChatLog()">EXPORT</button>
             <button class="chat-clr-btn" onclick="clearChat()">CLEAR</button>
           </div>
         </div>
         <div id="chat-messages"></div>
+        <div id="chat-no-results" style="display:none;text-align:center;color:var(--text3);font-family:'Share Tech Mono',monospace;font-size:12px;padding:12px;">No messages match your filter.</div>
+        <div class="chat-emoji-row" id="chat-emoji-row"></div>
         <div class="chat-input-row">
           <input id="chat-input" placeholder="Type a message..." maxlength="200" onkeydown="if(event.key==='Enter')sendChat()"/>
           <button id="chat-send" onclick="sendChat()">SEND</button>
@@ -651,6 +698,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
             <span class="model-lbl" id="ai-model-lbl">Gemini</span>
             <span class="ai-sys-badge" id="ai-sys-badge">● READY</span>
             <span class="ai-badge-hdr">GEMINI</span>
+            <button class="chat-clr-btn" onclick="aiRegenerate()" title="Re-run the last prompt">↻ REGEN</button>
+            <button class="chat-clr-btn" onclick="aiExportConversation()" title="Export this conversation as JSON">EXPORT</button>
           </div>
         </div>
         <div id="ai-messages">
@@ -687,6 +736,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
             <input class="br-url-bar" id="br-url-bar" placeholder="Search or enter a URL..." onkeydown="brUrlKeydown(event)"/>
           </div>
           <button class="br-go-btn" onclick="brGo()">GO</button>
+          <button class="br-action-btn" id="br-bookmark-btn" onclick="brToggleBookmarkCurrent()" title="Bookmark this page">☆ BOOKMARK</button>
+          <button class="br-action-btn" id="br-bm-list-btn" onclick="brToggleBookmarksPanel()">📌 BOOKMARKS</button>
           <button class="br-action-btn" id="br-hist-btn" onclick="brToggleHistory()">🕐 HISTORY</button>
           <button class="br-action-btn" onclick="brNewTab()">＋ TAB</button>
           <button class="br-action-btn" onclick="brOpenExternal()">↗ EXT</button>
@@ -722,6 +773,13 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
               <button class="br-history-close" onclick="brToggleHistory()">✕</button>
             </div>
             <div class="br-history-list" id="br-history-list"></div>
+          </div>
+          <div class="br-history-panel" id="br-bookmarks-panel">
+            <div class="br-history-hdr">
+              <span class="br-history-title">BOOKMARKS</span>
+              <button class="br-history-close" onclick="brToggleBookmarksPanel()">✕</button>
+            </div>
+            <div class="br-history-list" id="br-bookmarks-list"></div>
           </div>
         </div>
         <div class="br-site-bar" id="br-site-bar" style="display:none;">
@@ -794,6 +852,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
         <div class="sysinfo-hbar">
           <h3>🖥️ SYSTEM INFO</h3>
           <button class="sysinfo-refresh-btn" onclick="refreshSysInfo()">↻ REFRESH</button>
+          <button class="sysinfo-refresh-btn" onclick="copySysInfo()">📋 COPY ALL</button>
         </div>
         <div class="sysinfo-body">
           <div class="sysinfo-section">
@@ -1127,6 +1186,17 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
               <div class="settings-row-left"><div class="settings-row-label">Logged In As</div></div><span class="settings-tag blue" id="about-user-lbl">—</span>
             </div>
             <div class="settings-row">
+              <div class="settings-row-left"><div class="settings-row-label">Backup All Data</div><div class="settings-row-desc">Profile, favorites, bookmarks, chat & search history as one JSON file</div></div>
+              <button class="settings-btn" onclick="exportAllData()">⬇ Export Backup</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left"><div class="settings-row-label">Restore From Backup</div></div>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input type="file" id="restore-file-input" accept="application/json" style="display:none;" onchange="importAllData(event)"/>
+                <button class="settings-btn" onclick="document.getElementById('restore-file-input').click()">⬆ Import Backup</button>
+              </div>
+            </div>
+            <div class="settings-row">
               <div class="settings-row-left"><div class="settings-row-label">Clear All Local Data</div></div>
               <button class="settings-btn danger" onclick="clearAllData()">Wipe Data</button>
             </div>
@@ -1150,6 +1220,86 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
         <div style="flex:1;display:flex;overflow:hidden;min-height:0;">
           <div id="code-editor-wrap" style="flex:1;min-width:0;overflow:hidden;border-right:1px solid var(--border);"></div>
           <iframe id="code-preview" style="flex:1;min-width:0;border:none;background:#fff;" sandbox="allow-scripts allow-modals"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTES -->
+    <div class="panel" id="panel-notes">
+      <div style="display:flex;flex-direction:column;height:100%;background:var(--bg);">
+        <div class="panel-hbar">
+          <h3>📝 NOTES</h3>
+          <span class="count-pill" id="notes-count-pill">0 notes</span>
+        </div>
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;gap:8px;">
+          <input id="note-input" class="edit-input" style="margin-bottom:0;" placeholder="Write a quick note and press Enter..." maxlength="500" onkeydown="if(event.key==='Enter')addNote()"/>
+          <button class="save-btn" onclick="addNote()">＋ ADD</button>
+        </div>
+        <div id="notes-list" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;"></div>
+      </div>
+    </div>
+
+    <!-- TODO -->
+    <div class="panel" id="panel-todo">
+      <div style="display:flex;flex-direction:column;height:100%;background:var(--bg);">
+        <div class="panel-hbar">
+          <h3>✅ TODO LIST</h3>
+          <span class="count-pill" id="todo-count-pill">0 tasks</span>
+        </div>
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;gap:8px;">
+          <input id="todo-input" class="edit-input" style="margin-bottom:0;" placeholder="Add a task and press Enter..." maxlength="200" onkeydown="if(event.key==='Enter')addTodo()"/>
+          <button class="save-btn" onclick="addTodo()">＋ ADD</button>
+        </div>
+        <div style="padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;gap:6px;">
+          <button class="console-filter active" id="todo-f-all" onclick="setTodoFilter('all')">ALL</button>
+          <button class="console-filter" id="todo-f-active" onclick="setTodoFilter('active')">ACTIVE</button>
+          <button class="console-filter" id="todo-f-done" onclick="setTodoFilter('done')">DONE</button>
+          <button class="console-filter" style="margin-left:auto;color:#444c56;" onclick="clearCompletedTodos()">CLEAR DONE</button>
+        </div>
+        <div id="todo-list" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
+
+    <!-- TIMER -->
+    <div class="panel" id="panel-timer">
+      <div style="display:flex;flex-direction:column;height:100%;background:var(--bg);align-items:center;">
+        <div class="panel-hbar" style="width:100%;">
+          <h3>⏱ FOCUS TIMER</h3>
+          <span class="count-pill" id="timer-mode-pill">WORK</span>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:22px;padding:20px;">
+          <div class="clock-display" id="timer-display" style="font-size:56px;padding:0;">25:00</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
+            <button class="save-btn" id="timer-start-btn" onclick="timerStartPause()">▶ START</button>
+            <button class="settings-btn" onclick="timerReset()">↺ RESET</button>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+            <button class="yt-quick-chip" onclick="timerSetPreset(25,'WORK')">25m Work</button>
+            <button class="yt-quick-chip" onclick="timerSetPreset(5,'BREAK')">5m Break</button>
+            <button class="yt-quick-chip" onclick="timerSetPreset(15,'BREAK')">15m Break</button>
+            <button class="yt-quick-chip" onclick="timerSetPreset(50,'WORK')">50m Work</button>
+          </div>
+          <div class="tz-display" id="timer-sessions">Sessions completed: 0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALCULATOR -->
+    <div class="panel" id="panel-calc">
+      <div style="display:flex;flex-direction:column;height:100%;background:var(--bg);align-items:center;">
+        <div class="panel-hbar" style="width:100%;">
+          <h3>🧮 CALCULATOR</h3>
+          <button class="chat-clr-btn" onclick="calcClearHistory()">CLEAR HISTORY</button>
+        </div>
+        <div style="display:flex;flex:1;width:100%;overflow:hidden;">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;padding:20px;gap:14px;max-width:340px;margin:0 auto;">
+            <input id="calc-display" readonly style="width:100%;text-align:right;font-family:'Share Tech Mono',monospace;font-size:32px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;color:var(--text);"/>
+            <div id="calc-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:100%;"></div>
+          </div>
+          <div style="width:220px;border-left:1px solid var(--border);overflow-y:auto;padding:14px;flex-shrink:0;">
+            <div class="section-title" style="margin-bottom:10px;">HISTORY</div>
+            <div id="calc-history" style="display:flex;flex-direction:column;gap:6px;"></div>
+          </div>
         </div>
       </div>
     </div>
@@ -1293,7 +1443,6 @@ let customSystemPrompt = '';
 
 const DIRECT_URLS = {
   'Bouncy Balls':            'https://bouncyballs.org/',
-  'Discord':                 'https://e.widgetbot.io/channels/1506473982214537236/1506473982709202947/',
   'DogeUB':                  'https://www.www.ea.e.cool.qzz.io.cdn.cloudflare.net/',
   'Escape Road':             'https://unblockedescaperoads.com/',
   'GEOMETRY DASH LITE':      'https://rawcdn.githack.com/genizy/google-class/main/gdlite/index.html',
@@ -1503,9 +1652,9 @@ function showLoader(cb){
 function showMain(){
   document.getElementById('app').style.display='flex';
   document.getElementById('user-chip').textContent='@'+sessionProfile.display;
-  buildLetterSidebar();buildSections();buildColorPicker();loadProfilePanel();
-  loadAndRenderChat();populateModelSelect();buildAccentSwatches();
-  loadSearchHistory();updateSerpModeLabel();
+  loadFavorites();buildLetterSidebar();buildSections();buildColorPicker();loadProfilePanel();
+  loadAndRenderChat();buildChatEmojiRow();populateModelSelect();buildAccentSwatches();
+  loadSearchHistory();loadBookmarks();loadNotes();loadTodos();updateSerpModeLabel();
   const ul=document.getElementById('about-user-lbl');if(ul)ul.textContent='@'+sessionProfile.display;
   sysInfoUptimeStart=Date.now();
   updateGeminiKeyStatus();
@@ -1524,7 +1673,7 @@ function kbShortcut(e){
   if(!kbdShortcutsEnabled)return;
   const tag=document.activeElement.tagName;
   if(['INPUT','TEXTAREA','SELECT','BUTTON'].includes(tag))return;
-  const map={g:'experiences',c:'chat',a:'ai',b:'browser',y:'youtube',i:'sysinfo',s:'settings',u:'users',p:'profile',x:'console'};
+  const map={g:'experiences',c:'chat',a:'ai',b:'browser',y:'youtube',i:'sysinfo',s:'settings',u:'users',p:'profile',x:'console',n:'notes',t:'todo',f:'timer',k:'calc'};
   if(map[e.key])navTo(map[e.key]);
   if(e.key==='/'&&activePanel==='experiences'){e.preventDefault();document.getElementById('search').focus();}
 }
@@ -1546,7 +1695,7 @@ function logout(){
 }
 
 function navTo(p){
-  ['experiences','chat','users','ai','browser','youtube','ytshorts','sysinfo','profile','settings','console','code'].forEach(x=>{
+  ['experiences','chat','users','ai','browser','youtube','ytshorts','sysinfo','profile','settings','console','code','notes','todo','timer','calc'].forEach(x=>{
     const nb=document.getElementById('nav-'+x),pb=document.getElementById('panel-'+x);
     if(nb)nb.classList.toggle('active',x===p);
     if(pb)pb.classList.toggle('active',x===p);
@@ -1563,6 +1712,10 @@ function navTo(p){
   if(p==='browser')setTimeout(()=>document.getElementById('br-url-bar').focus(),50);
   if(p==='console')setTimeout(()=>document.getElementById('console-input').focus(),50);
   if(p==='code')setTimeout(()=>{codeInitEditor();if(codeEditor)codeEditor.refresh();},50);
+  if(p==='notes')renderNotes();
+  if(p==='todo')renderTodos();
+  if(p==='timer')timerInitPanel();
+  if(p==='calc')calcInitPanel();
   if(p==='sysinfo'){refreshSysInfo();startSysInfoClock();}
   else if(sysInfoClockInterval){clearInterval(sysInfoClockInterval);sysInfoClockInterval=null;}
   if(p==='youtube')setTimeout(()=>document.getElementById('yt-url-input').focus(),50);
@@ -1592,10 +1745,47 @@ function buildLetterSidebar(){
     c.appendChild(b);
   });
 }
+const FAV_STORAGE_KEY='snoopy_favorites_v1';
+let favExperiences=new Set();
+function loadFavorites(){try{favExperiences=new Set(JSON.parse(localStorage.getItem(FAV_STORAGE_KEY)||'[]'));}catch(e){favExperiences=new Set();}}
+function saveFavorites(){try{localStorage.setItem(FAV_STORAGE_KEY,JSON.stringify([...favExperiences]));}catch(e){}}
+function toggleFavorite(name){
+  if(favExperiences.has(name))favExperiences.delete(name);else favExperiences.add(name);
+  saveFavorites();buildSections();
+}
+function makeExperienceBtn(entry){
+  const b=document.createElement('button');b.className='experience-btn';b.dataset.search=entry.name.toLowerCase();
+  const nameSpan=document.createElement('span');nameSpan.className='experience-btn-name';nameSpan.textContent=entry.name;
+  const star=document.createElement('button');star.type='button';
+  const isFav=favExperiences.has(entry.name);
+  star.className='experience-fav-star'+(isFav?' faved':'');star.textContent=isFav?'★':'☆';star.title=isFav?'Remove from favorites':'Add to favorites';
+  star.onclick=(e)=>{e.stopPropagation();toggleFavorite(entry.name);};
+  b.appendChild(nameSpan);b.appendChild(star);
+  b.addEventListener('click',()=>{
+    const openMode=document.getElementById('set-experience-open')?.value||'modal';
+    if(openMode==='direct'){openInNewTab(entry.url,entry.name);}
+    else{openModal(entry);}
+  });
+  return b;
+}
 function buildSections(){
   const cont=document.getElementById('sections-cont');cont.innerHTML='';let tot=0;
   const sortMode=document.getElementById('set-experience-sort')?.value||'alpha';
   const letters='0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  if(favExperiences.size){
+    const favEntries=[];
+    Object.values(allSections).forEach(list=>list.forEach(entry=>{if(favExperiences.has(entry.name))favEntries.push(entry);}));
+    favEntries.sort((a,b)=>a.name.localeCompare(b.name));
+    if(favEntries.length){
+      const sec=document.createElement('div');sec.className='letter-section';sec.id='sec-fav';
+      const hdr=document.createElement('div');hdr.className='letter-header';
+      hdr.innerHTML='<div class="letter-label fav-label">★</div><div class="letter-line"></div><div class="letter-count">'+favEntries.length+'</div>';
+      sec.appendChild(hdr);
+      const grid=document.createElement('div');grid.className='experience-grid';
+      favEntries.forEach(entry=>grid.appendChild(makeExperienceBtn(entry)));
+      sec.appendChild(grid);cont.appendChild(sec);
+    }
+  }
   (sortMode==='reverse'?[...letters].reverse():letters).forEach(letter=>{
     const experiences=allSections[letter];if(!experiences||!experiences.length)return;
     const toShow=sortMode==='reverse'?[...experiences].reverse():experiences;
@@ -1604,15 +1794,7 @@ function buildSections(){
     hdr.innerHTML='<div class="letter-label">'+letter+'</div><div class="letter-line"></div><div class="letter-count">'+toShow.length+'</div>';
     sec.appendChild(hdr);
     const grid=document.createElement('div');grid.className='experience-grid';
-    toShow.forEach(entry=>{
-      const b=document.createElement('button');b.className='experience-btn';b.textContent=entry.name;b.dataset.search=entry.name.toLowerCase();
-      b.onclick=()=>{
-        const openMode=document.getElementById('set-experience-open')?.value||'modal';
-        if(openMode==='direct'){openInNewTab(entry.url,entry.name);}
-        else{openModal(entry);}
-      };
-      grid.appendChild(b);tot++;
-    });
+    toShow.forEach(entry=>{grid.appendChild(makeExperienceBtn(entry));tot++;});
     sec.appendChild(grid);cont.appendChild(sec);
   });
   const gc=document.getElementById('experience-count');if(gc)gc.textContent=tot+' experience'+(tot!==1?'s':'');
@@ -1849,6 +2031,7 @@ function brShowHome(){
   brTabs[brActiveTab]={title:'New Tab',url:'',type:'home'};brRenderTabs();
   const dot=document.getElementById('br-status-dot'),st=document.getElementById('br-status-text');
   if(dot)dot.style.background='var(--accent3)';if(st)st.textContent='Ready — Snoopy Browser';
+  brUpdateBookmarkBtn();
 }
 function brSetView(mode){
   document.getElementById('br-welcome').style.display=mode==='home'?'flex':'none';
@@ -1889,6 +2072,7 @@ function brShowSite(url,noHistory){
   if(!noHistory){if(brNavIndex<brNavHistory.length-1)brNavHistory=brNavHistory.slice(0,brNavIndex+1);brNavHistory.push({type:'site',url});brNavIndex=brNavHistory.length-1;}
   document.getElementById('br-back-btn').disabled=brNavIndex<=0;
   document.getElementById('br-fwd-btn').disabled=brNavIndex>=brNavHistory.length-1;
+  brUpdateBookmarkBtn();
 }
 function brSearch(query){brSearchDirect(query);}
 function brSearchDirect(query,noHistory){
@@ -1905,6 +2089,7 @@ function brSearchDirect(query,noHistory){
   if(!noHistory){if(brNavIndex<brNavHistory.length-1)brNavHistory=brNavHistory.slice(0,brNavIndex+1);brNavHistory.push({type:'search',url:query});brNavIndex=brNavHistory.length-1;}
   document.getElementById('br-back-btn').disabled=brNavIndex<=0;
   document.getElementById('br-fwd-btn').disabled=brNavIndex>=brNavHistory.length-1;
+  brUpdateBookmarkBtn();
   _doSerpFetch(query);
 }
 async function _doSerpFetch(query){
@@ -1972,7 +2157,47 @@ function exportSearchHistory(){
   const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='snoopy-searches.json';a.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Exported','success');
 }
-function brToggleHistory(){brHistoryOpen=!brHistoryOpen;const panel=document.getElementById('br-history-panel'),btn=document.getElementById('br-hist-btn');panel.classList.toggle('open',brHistoryOpen);if(btn)btn.classList.toggle('active',brHistoryOpen);if(brHistoryOpen)renderSearchHistory();}
+const BOOKMARKS_KEY='snoopy_bookmarks_v1';
+let brBookmarks=[],brBookmarksOpen=false;
+function loadBookmarks(){try{brBookmarks=JSON.parse(localStorage.getItem(BOOKMARKS_KEY)||'[]');}catch(e){brBookmarks=[];}}
+function saveBookmarks(){try{localStorage.setItem(BOOKMARKS_KEY,JSON.stringify(brBookmarks.slice(0,100)));}catch(e){}}
+function brCurrentUrl(){const t=brTabs[brActiveTab];return t&&t.type==='site'?t.url:null;}
+function brIsBookmarked(url){return brBookmarks.some(b=>b.url===url);}
+function brToggleBookmarkCurrent(){
+  const url=brCurrentUrl();if(!url){showToast('Open a site first','info');return;}
+  const title=brTabs[brActiveTab].title||url;
+  if(brIsBookmarked(url)){brBookmarks=brBookmarks.filter(b=>b.url!==url);showToast('Bookmark removed','info');}
+  else{brBookmarks.unshift({url,title,ts:nowFull()});showToast('Bookmarked ★','success');}
+  saveBookmarks();brUpdateBookmarkBtn();renderBookmarks();
+}
+function brUpdateBookmarkBtn(){
+  const btn=document.getElementById('br-bookmark-btn');if(!btn)return;
+  const url=brCurrentUrl();
+  if(url&&brIsBookmarked(url)){btn.textContent='★ BOOKMARKED';btn.classList.add('active');}
+  else{btn.textContent='☆ BOOKMARK';btn.classList.remove('active');}
+}
+function renderBookmarks(){
+  const list=document.getElementById('br-bookmarks-list');if(!list)return;
+  if(!brBookmarks.length){list.innerHTML='<div style="padding:12px;font-family:\'Share Tech Mono\',monospace;font-size:10px;color:#555870;text-align:center;">No bookmarks yet — use ☆ BOOKMARK on any page</div>';return;}
+  list.innerHTML='';
+  brBookmarks.forEach((b,i)=>{
+    const item=document.createElement('div');item.className='br-history-item';item.style.position='relative';
+    item.innerHTML='<div class="br-history-q">⭐ '+esc(b.title)+'</div><div class="br-history-ts">'+esc(b.url)+'</div>';
+    item.addEventListener('click',()=>{brShowSite(b.url);brToggleBookmarksPanel();});
+    const rm=document.createElement('button');rm.textContent='✕';rm.title='Remove bookmark';
+    rm.style.cssText='position:absolute;top:6px;right:6px;background:none;border:none;color:#555870;cursor:pointer;font-size:11px;';
+    rm.onclick=(e)=>{e.stopPropagation();brBookmarks.splice(i,1);saveBookmarks();renderBookmarks();brUpdateBookmarkBtn();};
+    item.appendChild(rm);
+    list.appendChild(item);
+  });
+}
+function brToggleBookmarksPanel(){
+  brBookmarksOpen=!brBookmarksOpen;
+  const panel=document.getElementById('br-bookmarks-panel'),btn=document.getElementById('br-bm-list-btn');
+  panel.classList.toggle('open',brBookmarksOpen);if(btn)btn.classList.toggle('active',brBookmarksOpen);
+  if(brBookmarksOpen){renderBookmarks();if(brHistoryOpen)brToggleHistory();}
+}
+function brToggleHistory(){brHistoryOpen=!brHistoryOpen;const panel=document.getElementById('br-history-panel'),btn=document.getElementById('br-hist-btn');panel.classList.toggle('open',brHistoryOpen);if(btn)btn.classList.toggle('active',brHistoryOpen);if(brHistoryOpen){renderSearchHistory();if(brBookmarksOpen)brToggleBookmarksPanel();}}
 function brClearAll(){brShowHome();}
 function brReset(){brTabs=[{title:'New Tab',url:'',type:'home'}];brActiveTab=0;brNavHistory=[];brNavIndex=-1;brHistoryOpen=false;const p=document.getElementById('br-history-panel');if(p)p.classList.remove('open');}
 function updateSerpModeLabel(){const mode=document.getElementById('set-serp-mode')?.value||'inline';const sr=document.getElementById('br-status-right');if(sr)sr.textContent=mode==='google'?'Google Redirect':'SerpAPI Inline v2';}
@@ -2050,9 +2275,27 @@ async function aiSend(){
   const inp=document.getElementById('ai-input'),text=inp.value.trim();if(!text)return;
   inp.value='';inp.style.height='38px';updateAiCharCount(inp);
   aiAddMsg('user',text);
-  const imageMode=isImageModel();
   aiHistory.push({role:'user',parts:[{text}]});
   if(aiHistory.length>AI_MAX_TURNS*2)aiHistory=aiHistory.slice(aiHistory.length-AI_MAX_TURNS*2);
+  await aiRequestAndRender(text);
+  inp.focus();
+}
+function aiRegenerate(){
+  if(aiThinking)return;
+  if(!aiHistory.length){showToast('Nothing to regenerate yet','info');return;}
+  let lastUserText=null;
+  if(aiHistory[aiHistory.length-1]&&aiHistory[aiHistory.length-1].role==='model'){
+    aiHistory.pop();
+    const msgs=document.querySelectorAll('#ai-messages .ai-msg.assistant');
+    const last=msgs[msgs.length-1];if(last)last.remove();
+  }
+  for(let i=aiHistory.length-1;i>=0;i--){if(aiHistory[i].role==='user'){lastUserText=(aiHistory[i].parts&&aiHistory[i].parts[0]&&aiHistory[i].parts[0].text)||null;break;}}
+  if(!lastUserText){showToast('No previous prompt to regenerate','info');return;}
+  aiRequestAndRender(lastUserText);
+}
+async function aiRequestAndRender(text){
+  if(!GEMINI_API_KEY){aiAddError('No Gemini API key set. Go to Settings → AI → Gemini API Key.');return;}
+  const imageMode=isImageModel();
   aiThinking=true;
   document.getElementById('ai-send-btn').disabled=true;
   document.getElementById('ai-sys-badge').textContent=imageMode?'● DRAWING':'● THINKING';document.getElementById('ai-sys-badge').style.color='#f59e0b';
@@ -2091,12 +2334,30 @@ async function aiSend(){
       aiAddError(imageMode?'No image was returned. Try a more descriptive prompt.':'No response received.');
     }
   }catch(e){aiRemoveThinking();aiAddError(e.message);}
-  aiThinking=false;document.getElementById('ai-send-btn').disabled=false;updateGeminiKeyStatus();inp.focus();
+  aiThinking=false;document.getElementById('ai-send-btn').disabled=false;updateGeminiKeyStatus();
+}
+function aiExportConversation(){
+  if(!aiHistory.length){showToast('No conversation to export yet','info');return;}
+  const plain=aiHistory.map(turn=>({role:turn.role,text:(turn.parts||[]).map(p=>p.text||'[image]').join(' ')}));
+  const blob=new Blob([JSON.stringify(plain,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='snoopy-ai-conversation.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Conversation exported','success');
 }
 
 // ════════════════════════════════════════════════
 // SYSINFO
 // ════════════════════════════════════════════════
+function copySysInfo(){
+  const rows=document.querySelectorAll('#panel-sysinfo .sysinfo-row');
+  const lines=[];
+  rows.forEach(r=>{
+    const label=r.querySelector('.sysinfo-row-label')?.textContent||'';
+    const val=r.querySelector('.sysinfo-row-val')?.textContent||'';
+    if(label)lines.push(label+': '+val);
+  });
+  const text='SNOOPY SYSTEM INFO — '+nowFull()+'\n'+lines.join('\n');
+  if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>showToast('System info copied','success')).catch(()=>showToast('Copy failed','error'));
+}
 function refreshSysInfo(){
   const d=new Date();
   const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -2107,7 +2368,31 @@ function refreshSysInfo(){
   gel('sys-unix').textContent=Math.floor(d.getTime()/1000);
   const start=new Date(d.getFullYear(),0,0);gel('sys-doy').textContent=Math.floor((d-start)/(1000*60*60*24))+' / 365';
   const jan1=new Date(d.getFullYear(),0,1);gel('sys-week').textContent='Week '+Math.ceil(((d-jan1)/86400000+jan1.getDay()+1)/7);
-  if(navigator.getBattery&&!batteryFetching){batteryFetching=true;navigator.getBattery().then(bat=>{batteryFetching=false;const pct=Math.round(bat.level*100);gel('bat-level').textContent=pct+'%';const fill=document.getElementById('bat-fill');if(fill){fill.style.width=pct+'%';fill.className='battery-fill '+(pct>50?'high':pct>20?'med':'low');}gel('bat-charging').textContent=bat.charging?'⚡ Charging':'🔋 On Battery';gel('bat-full-time').textContent=bat.chargingTime===Infinity?'Not charging':fmtSeconds(bat.chargingTime);gel('bat-discharge-time').textContent=bat.dischargingTime===Infinity?'Plugged in':fmtSeconds(bat.dischargingTime);}).catch(()=>{batteryFetching=false;gel('bat-level').textContent='Not available';});}
+  if(navigator.getBattery&&!batteryFetching){
+    batteryFetching=true;
+    navigator.getBattery().then(bat=>{
+      batteryFetching=false;
+      const pct=Math.round(bat.level*100);
+      gel('bat-level').textContent=pct+'%';
+      const fill=document.getElementById('bat-fill');
+      if(fill){fill.style.width=pct+'%';fill.className='battery-fill '+(pct>50?'high':pct>20?'med':'low');}
+      gel('bat-charging').textContent=bat.charging?'⚡ Charging':'🔋 On Battery';
+      gel('bat-full-time').textContent=bat.chargingTime===Infinity?'Not charging':fmtSeconds(bat.chargingTime);
+      gel('bat-discharge-time').textContent=bat.dischargingTime===Infinity?'Plugged in':fmtSeconds(bat.dischargingTime);
+      ['chargingchange','levelchange','dischargingtimechange','chargingtimechange'].forEach(ev=>{
+        bat.removeEventListener(ev,refreshSysInfo);bat.addEventListener(ev,refreshSysInfo);
+      });
+    }).catch(()=>{
+      batteryFetching=false;
+      gel('bat-level').textContent='Blocked by browser';
+      gel('bat-charging').textContent='—';gel('bat-full-time').textContent='—';gel('bat-discharge-time').textContent='—';
+      const fill=document.getElementById('bat-fill');if(fill)fill.style.width='0%';
+    });
+  }else if(!navigator.getBattery){
+    gel('bat-level').textContent='Not supported in this browser';
+    gel('bat-charging').textContent='—';gel('bat-full-time').textContent='—';gel('bat-discharge-time').textContent='—';
+    const fill=document.getElementById('bat-fill');if(fill)fill.style.width='0%';
+  }
   gel('sys-cores').textContent=(navigator.hardwareConcurrency||'Unknown')+' cores';
   gel('sys-mem').textContent=navigator.deviceMemory?(navigator.deviceMemory+' GB'):'Not available';
   gel('sys-screen').textContent=screen.width+'×'+screen.height;
@@ -2226,11 +2511,32 @@ function appendChatMsg(msgObj){const msgs=loadChatHistory();if(msgObj.id&&msgs.s
 function exportChatLog(){const blob=new Blob([JSON.stringify(loadChatHistory(),null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='snoopy-chat.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Exported','success');}
 function renderChatMsgEl(msgObj){
   const cont=document.getElementById('chat-messages');
-  if(msgObj.type==='system'){const e=document.createElement('div');e.className='chat-system';e.textContent='— '+msgObj.text+' —';cont.appendChild(e);return;}
+  if(msgObj.type==='system'){const e=document.createElement('div');e.className='chat-system';e.textContent='— '+msgObj.text+' —';e.dataset.search='';cont.appendChild(e);return;}
   const isMe=(msgObj.key===sessionKey);const e=document.createElement('div');e.className='chat-msg '+(isMe?'me':'other');
   const showTs=document.getElementById('set-timestamps')?.checked!==false;
+  e.dataset.search=((msgObj.display||'')+' '+(msgObj.text||'')).toLowerCase();
   e.innerHTML='<div class="chat-msg-name">@'+esc(msgObj.display)+'</div><div class="chat-bubble">'+esc(msgObj.text)+'</div>'+(showTs?'<div class="chat-msg-time">'+esc(msgObj.time)+'</div>':'');
   cont.appendChild(e);
+  const q=(document.getElementById('chat-search')?.value||'').toLowerCase().trim();
+  if(q&&!e.dataset.search.includes(q))e.style.display='none';
+}
+function filterChatMessages(){
+  const q=(document.getElementById('chat-search').value||'').toLowerCase().trim();
+  let any=false;
+  document.querySelectorAll('#chat-messages .chat-msg, #chat-messages .chat-system').forEach(el=>{
+    const m=!q||(el.dataset.search||'').includes(q);
+    el.style.display=m?'':'none';if(m)any=true;
+  });
+  const nr=document.getElementById('chat-no-results');if(nr)nr.style.display=(!any&&q)?'block':'none';
+}
+const CHAT_EMOJIS=['😀','😂','😍','👍','🎮','🔥','😎','🤖','❤️','😢','🎉','👀'];
+function buildChatEmojiRow(){
+  const row=document.getElementById('chat-emoji-row');if(!row)return;row.innerHTML='';
+  CHAT_EMOJIS.forEach(em=>{
+    const b=document.createElement('button');b.className='chat-emoji-btn';b.type='button';b.textContent=em;
+    b.onclick=()=>{const inp=document.getElementById('chat-input');inp.value+=em;inp.focus();};
+    row.appendChild(b);
+  });
 }
 function loadAndRenderChat(){const cont=document.getElementById('chat-messages');cont.innerHTML='';loadChatHistory().forEach(m=>renderChatMsgEl(m));cont.scrollTop=cont.scrollHeight;}
 function updateBadge(){const b=document.getElementById('chat-badge');if(unread>0&&activePanel!=='chat'){b.textContent=unread>9?'9+':String(unread);b.style.display='flex';}else b.style.display='none';}
@@ -2522,8 +2828,205 @@ function buildAccentSwatches(){
     cont.appendChild(sw);
   });
 }
-function clearAllData(){if(!confirm('Wipe ALL local data?'))return;localStorage.clear();GEMINI_API_KEY='';searchHistory=[];updateGeminiKeyStatus();showToast('All data cleared','info');}
+function clearAllData(){if(!confirm('Wipe ALL local data?'))return;localStorage.clear();GEMINI_API_KEY='';searchHistory=[];brBookmarks=[];favExperiences=new Set();updateGeminiKeyStatus();showToast('All data cleared','info');}
+function exportAllData(){
+  const backup={
+    exportedAt:nowFull(),version:'3.2.0',
+    profile:sessionKey?loadPersistedProfile(sessionKey):null,
+    chatHistory:loadChatHistory(),
+    searchHistory,bookmarks:brBookmarks,favorites:[...favExperiences],
+    notes:notesData,todos:todosData,
+    geminiKeySet:!!GEMINI_API_KEY,customSystemPrompt
+  };
+  const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='snoopy-backup.json';a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);showToast('Backup exported','success');
+}
+function importAllData(e){
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      if(data.profile&&sessionKey)try{localStorage.setItem(PROFILE_STORAGE_KEY+'_'+sessionKey,JSON.stringify(data.profile));}catch(err){}
+      if(Array.isArray(data.chatHistory))saveChatHistory(data.chatHistory);
+      if(Array.isArray(data.searchHistory)){searchHistory=data.searchHistory;saveSearchHistory();}
+      if(Array.isArray(data.bookmarks)){brBookmarks=data.bookmarks;saveBookmarks();}
+      if(Array.isArray(data.favorites)){favExperiences=new Set(data.favorites);saveFavorites();}
+      if(Array.isArray(data.notes)){notesData=data.notes;saveNotes();}
+      if(Array.isArray(data.todos)){todosData=data.todos;saveTodos();}
+      if(typeof data.customSystemPrompt==='string')customSystemPrompt=data.customSystemPrompt;
+      showToast('Backup restored — reloading view','success');
+      loadAndRenderChat();buildSections();renderBookmarks();renderNotes();renderTodos();
+      if(sessionKey){sessionProfile={...sessionProfile,...loadPersistedProfile(sessionKey)};loadProfilePanel();}
+    }catch(err){showToast('Invalid backup file: '+err.message,'error');}
+  };
+  reader.readAsText(file);e.target.value='';
+}
 function toggleLetterSidebar(show){if(activePanel==='experiences')document.getElementById('letter-sidebar').style.display=show?'flex':'none';}
+
+// ════════════════════════════════════════════════
+// NOTES — simple persisted sticky notes
+// ════════════════════════════════════════════════
+const NOTES_KEY='snoopy_notes_v1';
+let notesData=[];
+function loadNotes(){try{notesData=JSON.parse(localStorage.getItem(NOTES_KEY)||'[]');}catch(e){notesData=[];}}
+function saveNotes(){try{localStorage.setItem(NOTES_KEY,JSON.stringify(notesData.slice(0,300)));}catch(e){}}
+function addNote(){
+  const inp=document.getElementById('note-input'),text=inp.value.trim();if(!text)return;
+  notesData.unshift({id:makeMsgId(),text,ts:nowFull()});inp.value='';saveNotes();renderNotes();
+}
+function deleteNote(id){notesData=notesData.filter(n=>n.id!==id);saveNotes();renderNotes();}
+function renderNotes(){
+  const list=document.getElementById('notes-list');if(!list)return;
+  const pill=document.getElementById('notes-count-pill');if(pill)pill.textContent=notesData.length+' note'+(notesData.length!==1?'s':'');
+  if(!notesData.length){list.innerHTML='<div class="notes-empty">No notes yet — add one above.</div>';return;}
+  list.innerHTML='';
+  notesData.forEach(n=>{
+    const card=document.createElement('div');card.className='note-card';
+    card.innerHTML='<button class="note-del-btn" title="Delete note">✕</button><div class="note-card-text"></div><div class="note-card-ts"></div>';
+    card.querySelector('.note-card-text').textContent=n.text;
+    card.querySelector('.note-card-ts').textContent=n.ts;
+    card.querySelector('.note-del-btn').onclick=()=>deleteNote(n.id);
+    list.appendChild(card);
+  });
+}
+
+// ════════════════════════════════════════════════
+// TODO LIST — persisted tasks with filter
+// ════════════════════════════════════════════════
+const TODO_KEY='snoopy_todos_v1';
+let todosData=[],todoFilter='all';
+function loadTodos(){try{todosData=JSON.parse(localStorage.getItem(TODO_KEY)||'[]');}catch(e){todosData=[];}}
+function saveTodos(){try{localStorage.setItem(TODO_KEY,JSON.stringify(todosData.slice(0,500)));}catch(e){}}
+function addTodo(){
+  const inp=document.getElementById('todo-input'),text=inp.value.trim();if(!text)return;
+  todosData.unshift({id:makeMsgId(),text,done:false,ts:nowFull()});inp.value='';saveTodos();renderTodos();
+}
+function toggleTodo(id){const t=todosData.find(x=>x.id===id);if(t){t.done=!t.done;saveTodos();renderTodos();}}
+function deleteTodo(id){todosData=todosData.filter(t=>t.id!==id);saveTodos();renderTodos();}
+function clearCompletedTodos(){todosData=todosData.filter(t=>!t.done);saveTodos();renderTodos();}
+function setTodoFilter(f){
+  todoFilter=f;['all','active','done'].forEach(x=>{const el=document.getElementById('todo-f-'+x);if(el)el.classList.toggle('active',x===f);});
+  renderTodos();
+}
+function renderTodos(){
+  const list=document.getElementById('todo-list');if(!list)return;
+  const pill=document.getElementById('todo-count-pill');
+  const activeCount=todosData.filter(t=>!t.done).length;
+  if(pill)pill.textContent=activeCount+' task'+(activeCount!==1?'s':'')+' left';
+  const shown=todosData.filter(t=>todoFilter==='all'||(todoFilter==='active'&&!t.done)||(todoFilter==='done'&&t.done));
+  if(!shown.length){list.innerHTML='<div class="todo-empty">Nothing here.</div>';return;}
+  list.innerHTML='';
+  shown.forEach(t=>{
+    const item=document.createElement('div');item.className='todo-item';
+    item.innerHTML='<input type="checkbox" class="todo-check"'+(t.done?' checked':'')+'/><span class="todo-text'+(t.done?' done':'')+'"></span><button class="todo-del-btn" title="Delete">✕</button>';
+    item.querySelector('.todo-text').textContent=t.text;
+    item.querySelector('.todo-check').onchange=()=>toggleTodo(t.id);
+    item.querySelector('.todo-del-btn').onclick=()=>deleteTodo(t.id);
+    list.appendChild(item);
+  });
+}
+
+// ════════════════════════════════════════════════
+// FOCUS TIMER — Pomodoro-style countdown
+// ════════════════════════════════════════════════
+const TIMER_SESSIONS_KEY='snoopy_timer_sessions_v1';
+let timerTotalSecs=25*60,timerRemaining=25*60,timerRunning=false,timerInterval=null,timerMode='WORK';
+function timerFmt(s){const m=Math.floor(s/60),sec=s%60;return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0');}
+function timerUpdateDisplay(){const d=document.getElementById('timer-display');if(d)d.textContent=timerFmt(timerRemaining);}
+function timerSetPreset(mins,mode){
+  timerPause();timerTotalSecs=mins*60;timerRemaining=timerTotalSecs;timerMode=mode;
+  const mp=document.getElementById('timer-mode-pill');if(mp)mp.textContent=mode;
+  timerUpdateDisplay();
+}
+function timerStartPause(){timerRunning?timerPause():timerStart();}
+function timerStart(){
+  if(timerRunning)return;timerRunning=true;
+  document.getElementById('timer-start-btn').textContent='⏸ PAUSE';
+  timerInterval=setInterval(()=>{
+    timerRemaining--;timerUpdateDisplay();
+    if(timerRemaining<=0){
+      timerPause();showToast(timerMode+' session complete! 🎉','success');
+      let sessions=0;try{sessions=parseInt(localStorage.getItem(TIMER_SESSIONS_KEY)||'0',10)||0;}catch(e){}
+      sessions++;try{localStorage.setItem(TIMER_SESSIONS_KEY,String(sessions));}catch(e){}
+      const sEl=document.getElementById('timer-sessions');if(sEl)sEl.textContent='Sessions completed: '+sessions;
+      timerRemaining=timerTotalSecs;timerUpdateDisplay();
+      if(activePanel!=='timer')navTo('timer');
+    }
+  },1000);
+}
+function timerPause(){timerRunning=false;clearInterval(timerInterval);const b=document.getElementById('timer-start-btn');if(b)b.textContent='▶ START';}
+function timerReset(){timerPause();timerRemaining=timerTotalSecs;timerUpdateDisplay();}
+function timerInitPanel(){
+  let sessions=0;try{sessions=parseInt(localStorage.getItem(TIMER_SESSIONS_KEY)||'0',10)||0;}catch(e){}
+  const sEl=document.getElementById('timer-sessions');if(sEl)sEl.textContent='Sessions completed: '+sessions;
+  timerUpdateDisplay();
+}
+
+// ════════════════════════════════════════════════
+// CALCULATOR — button grid + history
+// ════════════════════════════════════════════════
+const CALC_HISTORY_KEY='snoopy_calc_history_v1';
+let calcExpr='',calcHistory=[];
+function loadCalcHistory(){try{calcHistory=JSON.parse(localStorage.getItem(CALC_HISTORY_KEY)||'[]');}catch(e){calcHistory=[];}}
+function saveCalcHistory(){try{localStorage.setItem(CALC_HISTORY_KEY,JSON.stringify(calcHistory.slice(0,50)));}catch(e){}}
+const CALC_BUTTONS=[
+  ['C','clr'],['⌫','clr'],['%','op'],['÷','op'],
+  ['7',''],['8',''],['9',''],['×','op'],
+  ['4',''],['5',''],['6',''],['−','op'],
+  ['1',''],['2',''],['3',''],['+','op'],
+  ['0',''],['.',''],['=','eq']
+];
+function buildCalcGrid(){
+  const grid=document.getElementById('calc-grid');if(!grid)return;grid.innerHTML='';
+  CALC_BUTTONS.forEach(([label,cls])=>{
+    const b=document.createElement('button');b.className='calc-btn'+(cls?' '+cls:'');b.textContent=label;
+    if(label==='0')b.style.gridColumn='span 2';
+    b.onclick=()=>calcPress(label);
+    grid.appendChild(b);
+  });
+}
+function calcPress(label){
+  const disp=document.getElementById('calc-display');
+  if(label==='C'){calcExpr='';}
+  else if(label==='⌫'){calcExpr=calcExpr.slice(0,-1);}
+  else if(label==='='){calcEvaluate();return;}
+  else{
+    const map={'×':'*','÷':'/','−':'-','%':'/100*'};
+    calcExpr+=map[label]!==undefined?map[label]:label;
+  }
+  disp.value=calcExpr;
+}
+function calcEvaluate(){
+  const disp=document.getElementById('calc-display');
+  if(!calcExpr){return;}
+  if(!/^[0-9+\-*/.() ]+$/.test(calcExpr)){disp.value='Error';calcExpr='';return;}
+  try{
+    const result=Function('"use strict";return ('+calcExpr+')')();
+    if(!isFinite(result))throw new Error('Invalid');
+    const rounded=Math.round(result*1e10)/1e10;
+    calcHistory.unshift({expr:calcExpr,result:rounded,ts:nowT()});saveCalcHistory();renderCalcHistory();
+    disp.value=String(rounded);calcExpr=String(rounded);
+  }catch(e){disp.value='Error';calcExpr='';}
+}
+function renderCalcHistory(){
+  const cont=document.getElementById('calc-history');if(!cont)return;
+  if(!calcHistory.length){cont.innerHTML='<div style="font-family:\'Share Tech Mono\',monospace;font-size:10px;color:var(--text3);">No calculations yet</div>';return;}
+  cont.innerHTML='';
+  calcHistory.forEach(h=>{
+    const item=document.createElement('div');item.className='calc-hist-item';
+    item.textContent=h.expr+' = '+h.result;
+    item.onclick=()=>{calcExpr=String(h.result);document.getElementById('calc-display').value=calcExpr;};
+    cont.appendChild(item);
+  });
+}
+function calcClearHistory(){calcHistory=[];saveCalcHistory();renderCalcHistory();showToast('Calculator history cleared','info');}
+function calcInitPanel(){
+  if(!document.getElementById('calc-grid').childElementCount)buildCalcGrid();
+  loadCalcHistory();renderCalcHistory();
+  const disp=document.getElementById('calc-display');if(disp&&!disp.value)disp.value='0';
+}
 
 // ════════════════════════════════════════════════
 // INIT
