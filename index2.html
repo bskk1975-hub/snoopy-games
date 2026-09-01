@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Test Project</title>
+<title>Home- Classroom</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap');
 #code-editor-wrap .CodeMirror{height:100%;font-family:'Share Tech Mono',monospace;font-size:13px;}
@@ -840,6 +840,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
           <h3>YT SHORTS DOOMSCROLLING</h3>
           <div style="display:flex;align-items:center;gap:8px;">
             <button class="chat-clr-btn" onclick="fetchShortsFromApi()" title="Pull fresh Shorts via the YouTube Data API">↻ REFRESH VIA API</button>
+            <button class="chat-clr-btn" onclick="shuffleShortsFeed()" title="Re-shuffle the currently loaded Shorts">🔀 SHUFFLE</button>
             <span class="yt-badge">SCROLL FEED</span>
           </div>
         </div>
@@ -1086,17 +1087,22 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
               <span class="settings-tag red" id="yt-channel-count-tag">4 channels</span>
             </div>
             <div class="settings-row">
-              <div class="settings-row-left"><div class="settings-row-label">Max Shorts Per Fetch</div><div class="settings-row-desc">Higher = more quota used per refresh (100 units per 50 results)</div></div>
+              <div class="settings-row-left"><div class="settings-row-label">Max Shorts Per Fetch</div><div class="settings-row-desc">Results are shuffled across channels — "Unlimited" pulls each channel's full upload history (capped at 1000/channel as a safety limit)</div></div>
               <select class="settings-select" id="set-yt-max-shorts" onchange="applyMaxShortsSetting(this.value)">
                 <option value="50">50</option>
                 <option value="100">100</option>
                 <option value="200" selected>200</option>
                 <option value="500">500</option>
+                <option value="unlimited">Unlimited</option>
               </select>
             </div>
             <div class="settings-row">
               <div class="settings-row-left"><div class="settings-row-label">Refresh Shorts Feed</div><div class="settings-row-desc">Pulls recent video IDs from the channels above via the API</div></div>
               <button class="settings-btn" onclick="fetchShortsFromApi()">↻ Fetch Now</button>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left"><div class="settings-row-label">Shuffle Loaded Shorts</div><div class="settings-row-desc">Re-randomizes the order of Shorts already loaded, without re-fetching</div></div>
+              <button class="settings-btn" onclick="shuffleShortsFeed()">🔀 Shuffle</button>
             </div>
           </div>
 
@@ -1683,6 +1689,9 @@ function showMain(){
   const ul=document.getElementById('about-user-lbl');if(ul)ul.textContent='@'+sessionProfile.display;
   sysInfoUptimeStart=Date.now();
   updateGeminiKeyStatus();
+  updateYtDataKeyStatus();
+  const chTag=document.getElementById('yt-channel-count-tag');if(chTag)chTag.textContent=YT_SHORTS_CHANNELS.length+' channel'+(YT_SHORTS_CHANNELS.length!==1?'s':'');
+  const maxSel=document.getElementById('set-yt-max-shorts');if(maxSel)maxSel.value=localStorage.getItem(YT_MAX_SHORTS_KEY)||'200';
   consoleLog('Snoopy v3.1.4 initialized','info');
   consoleLog('Logged in as @'+sessionProfile.display,'log');
   consoleLog('AI: Gemini Loaded','info');
@@ -1912,39 +1921,31 @@ function ytOpenNativeSearch(){
 }
 
 // ════════════════════════════════════════════════
-// YT SHORTS — vertical scrolling feed
+// YT SHORTS — sourced live from the YouTube Data API (no manual links)
 // ════════════════════════════════════════════════
-// A larger pool of example Shorts to start the feed with. YouTube IDs can stop
-// working if a video gets taken down, so treat these as placeholders — use
-// the "+ ADD" box in the panel to drop in your own Shorts links/IDs.
-const YT_SHORTS_DEFAULT = [
-  'hE4-5Y7hp9I', // CarterPCs - Welcome Back
-  'EYsqFShE4I4', // CarterPCs - Free PCs in Public
-  '9YMPqml7Syw', // CarterPCs - Tech Recap
-  'ZZBdkoFFhhc', // CarterPCs - Outro Return
-  'qi_t08m7Tro', // CarterPCs - AI & Tech Updates
-  'waN0qXEVqz4', // CarterPCs - Tech Shorts
-  'B6u_Pd_f8Z4', // CarterPCs - Tech Storytime
-  'LNOEtgMam84', // Tech Devices / iPad Breakdown
-  'dQw4w9WgXcQ', // Tech Gadgets & News
-  'Mus_p765RI4', // Desk Setup Tech
-  '2Yce5DPvOoc', // Gaming PC Build Hacks
-  'xX2t8sQ29G0', // Custom PC Modding
-  '8j1cAlxnPI0', // Smartphone & Tech Tips
-  'FIhi8HRi1kQ', // Tech Devices & Unboxing
-  '2zNSgSzhBfM', // Budget Tech Gadgets
-  'nfWlot6h_JM', // Wireless Earbuds Review
-  'vSX3IRxGnNY', // Odd PC Hardware
-  '8UVNT4wvIGY', // Smart Home Devices
-  'JZG_kd6vN2A'  // Flagship Phone Vs Budget Phone
+const SHORTS_STORAGE_KEY = 'snoopy_shorts_v1';
+const YT_DATA_KEY_STORAGE = 'snoopy_yt_data_api_key';
+const YT_MAX_SHORTS_KEY = 'snoopy_yt_max_shorts';
+let YT_DATA_API_KEY = localStorage.getItem(YT_DATA_KEY_STORAGE) || '';
+
+// Edit this list to change which channels the Shorts feed pulls from.
+// Handles (with @) or raw channel IDs (UC...) both work.
+const YT_SHORTS_CHANNELS = [
+  '@MrBeast',
+  '@MKBHD',
+  '@NASA',
+  '@Vsauce'
 ];
 
-const SHORTS_STORAGE_KEY = 'snoopy_shorts_v1';
 let ytShorts = [];
+let ytShortsFetching = false;
 let shortsObserver = null;
 let shortsActiveIdx = -1;
 function loadShorts(){
-  ytShorts = YT_SHORTS_DEFAULT; // sourced straight from the array above — edit that list to change what shows
+  try{ytShorts = JSON.parse(localStorage.getItem(SHORTS_STORAGE_KEY) || '[]');}catch(e){ytShorts = [];}
+}
+function saveShorts(){
+  try{localStorage.setItem(SHORTS_STORAGE_KEY, JSON.stringify(ytShorts.slice(0, 500)));}catch(e){}
 }
 function shortsEmbedSrc(id){
   return 'https://www.youtube-nocookie.com/embed/'+id+'?rel=0&modestbranding=1&playsinline=1&enablejsapi=1&mute=1';
@@ -1953,7 +1954,7 @@ function renderShorts(){
   const feed=document.getElementById('shorts-feed');if(!feed)return;
   if(shortsObserver){shortsObserver.disconnect();shortsObserver=null;}
   shortsActiveIdx=-1;
-  if(!ytShorts.length){feed.innerHTML='<div class="short-empty">No shorts in the code yet — add IDs to YT_SHORTS_DEFAULT.</div>';return;}
+  if(!ytShorts.length){feed.innerHTML='<div class="short-empty">No Shorts loaded yet.<br><br>Set your YouTube Data API key in Settings → YouTube Shorts, then hit ↻ REFRESH VIA API.</div>';return;}
   feed.innerHTML='';
   ytShorts.forEach((id,idx)=>{
     const item=document.createElement('div');item.className='short-item';item.dataset.idx=idx;
@@ -2008,6 +2009,146 @@ function shortsRestartObserver(){
 }
 function removeShort(idx){
   ytShorts.splice(idx,1);saveShorts();renderShorts();
+}
+
+// ---- YouTube Data API key ----
+function saveYtDataApiKey(){
+  const val=document.getElementById('set-yt-data-key').value.trim();
+  if(!val){showToast('Enter a key first','error');return;}
+  YT_DATA_API_KEY=val;
+  try{localStorage.setItem(YT_DATA_KEY_STORAGE,val);}catch(e){}
+  updateYtDataKeyStatus();showToast('YouTube Data API key saved ✓','success');
+}
+function updateYtDataKeyStatus(){
+  const inp=document.getElementById('set-yt-data-key');
+  const status=document.getElementById('yt-data-key-status');
+  if(!inp||!status)return;
+  if(YT_DATA_API_KEY){inp.value=YT_DATA_API_KEY;inp.placeholder='Key set';status.textContent='SET ✓';status.className='api-key-status set';}
+  else{inp.value='';inp.placeholder='AIza...';status.textContent='NOT SET';status.className='api-key-status unset';}
+}
+function applyMaxShortsSetting(val){
+  try{localStorage.setItem(YT_MAX_SHORTS_KEY,val);}catch(e){}
+  showToast('Max Shorts per fetch: '+val,'info');
+}
+
+// ---- YouTube Data API helpers ----
+function ytParseISODuration(iso){
+  const m=(iso||'').match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if(!m)return 0;
+  return (parseInt(m[1]||0,10)*3600)+(parseInt(m[2]||0,10)*60)+parseInt(m[3]||0,10);
+}
+async function ytApiGet(path,params,apiKey){
+  const qs=new URLSearchParams({...params,key:apiKey}).toString();
+  const res=await fetch('https://www.googleapis.com/youtube/v3/'+path+'?'+qs);
+  const data=await res.json();
+  if(data.error)throw new Error(data.error.message||('HTTP '+res.status));
+  return data;
+}
+async function ytResolveChannelId(handleOrId,apiKey){
+  if(/^UC[a-zA-Z0-9_-]{22}$/.test(handleOrId))return handleOrId;
+  const handle='@'+handleOrId.replace(/^@/,'');
+  const data=await ytApiGet('channels',{part:'id',forHandle:handle},apiKey);
+  if(data.items&&data.items.length)return data.items[0].id;
+  throw new Error('Channel not found: '+handleOrId);
+}
+async function ytGetUploadsPlaylist(channelId,apiKey){
+  const data=await ytApiGet('channels',{part:'contentDetails',id:channelId},apiKey);
+  const item=data.items&&data.items[0];
+  if(!item)throw new Error('No channel data for '+channelId);
+  return item.contentDetails.relatedPlaylists.uploads;
+}
+async function ytGetPlaylistVideoIds(playlistId,apiKey,maxCount){
+  let ids=[],pageToken='';
+  while(ids.length<maxCount){
+    const params={part:'contentDetails',playlistId,maxResults:'50'};
+    if(pageToken)params.pageToken=pageToken;
+    const data=await ytApiGet('playlistItems',params,apiKey);
+    (data.items||[]).forEach(it=>ids.push(it.contentDetails.videoId));
+    pageToken=data.nextPageToken;
+    if(!pageToken)break;
+  }
+  return ids.slice(0,maxCount);
+}
+async function ytFilterShorts(videoIds,apiKey){
+  const shorts=[];
+  for(let i=0;i<videoIds.length;i+=50){
+    const batch=videoIds.slice(i,i+50);
+    const data=await ytApiGet('videos',{part:'contentDetails',id:batch.join(',')},apiKey);
+    (data.items||[]).forEach(v=>{
+      const dur=ytParseISODuration(v.contentDetails.duration);
+      if(dur>0&&dur<=60)shorts.push(v.id);
+    });
+  }
+  return shorts;
+}
+
+function shuffleArray(arr){
+  for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}
+  return arr;
+}
+// Interleaves per-channel id lists so consecutive Shorts avoid repeating the
+// same channel back-to-back wherever possible, while still being randomized.
+function shuffleInterleaveChannels(channelLists){
+  const queues=channelLists.map(list=>shuffleArray([...list])).filter(q=>q.length);
+  const result=[];
+  let lastIdx=-1;
+  while(queues.some(q=>q.length)){
+    let candidates=queues.map((q,i)=>({q,i})).filter(o=>o.q.length);
+    let pickable=candidates.filter(o=>o.i!==lastIdx);
+    if(!pickable.length)pickable=candidates; // only one channel left with items — forced repeat
+    const choice=pickable[Math.floor(Math.random()*pickable.length)];
+    result.push(choice.q.shift());
+    lastIdx=choice.i;
+  }
+  return result;
+}
+function shuffleShortsFeed(){
+  if(!ytShorts.length){showToast('No Shorts to shuffle yet','info');return;}
+  shuffleArray(ytShorts);
+  saveShorts();renderShorts();
+  showToast('Shuffled ✓','info');
+}
+
+// ---- main entry point (wired to the Settings "Fetch Now" button and the
+// ↻ REFRESH VIA API button on the Shorts panel) ----
+async function fetchShortsFromApi(){
+  if(ytShortsFetching)return;
+  if(!YT_DATA_API_KEY){showToast('Set your YouTube Data API key in Settings first','error');navTo('settings');return;}
+  if(!YT_SHORTS_CHANNELS.length){showToast('No source channels configured in code','error');return;}
+  ytShortsFetching=true;
+  showToast('Fetching Shorts from YouTube...','info');
+  const maxSetting=localStorage.getItem(YT_MAX_SHORTS_KEY)||'200';
+  const unlimited=maxSetting==='unlimited';
+  // Unlimited still needs a per-channel safety ceiling so a single huge
+  // channel (thousands of uploads) can't loop forever or blow the API quota —
+  // 1000 per channel is generous (well over what a Shorts session needs) but bounded.
+  const perChannelCap=unlimited?1000:Math.max(10,Math.ceil(parseInt(maxSetting,10)/YT_SHORTS_CHANNELS.length));
+  const channelResults=[];
+  for(const handle of YT_SHORTS_CHANNELS){
+    try{
+      const channelId=await ytResolveChannelId(handle,YT_DATA_API_KEY);
+      const uploadsId=await ytGetUploadsPlaylist(channelId,YT_DATA_API_KEY);
+      const videoIds=await ytGetPlaylistVideoIds(uploadsId,YT_DATA_API_KEY,perChannelCap);
+      const shorts=await ytFilterShorts(videoIds,YT_DATA_API_KEY);
+      channelResults.push(shorts);
+      consoleLog('Fetched '+shorts.length+' Shorts from '+handle,'info');
+    }catch(chErr){
+      consoleLog('Shorts fetch failed for '+handle+': '+chErr.message,'warn');
+      channelResults.push([]);
+    }
+  }
+  let merged=[...new Set(shuffleInterleaveChannels(channelResults))];
+  if(!unlimited){
+    const totalCap=parseInt(maxSetting,10)||200;
+    merged=merged.slice(0,totalCap);
+  }
+  ytShortsFetching=false;
+  if(!merged.length){showToast('No Shorts found — check your API key and channels','error');return;}
+  ytShorts=merged;
+  saveShorts();
+  renderShorts();
+  shortsInitialized=true;
+  showToast('Loaded '+merged.length+' Shorts, shuffled ✓','success');
 }
 
 // ════════════════════════════════════════════════
