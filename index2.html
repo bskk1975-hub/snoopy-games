@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Home - Classroom</title>
+<title>Test Project</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap');
 #code-editor-wrap .CodeMirror{height:100%;font-family:'Share Tech Mono',monospace;font-size:13px;}
@@ -450,7 +450,7 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 .settings-section-hdr.gold-hdr svg{stroke:#fbbf24;}
 .settings-section-hdr.gold-hdr .settings-section-title{color:#fbbf24;}
 .settings-range{width:100px;accent-color:var(--accent3);}
-.settings-range-val{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent3);min-width:36px;}
+.-range-val{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--accent3);min-width:36px;}
 .api-key-wrap{display:flex;align-items:center;gap:6px;flex:1;max-width:280px;}
 .api-key-input{flex:1;padding:7px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;transition:border-color 0.2s;min-width:0;}
 .api-key-input:focus{border-color:var(--ai);}
@@ -837,7 +837,10 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
       <div style="display:flex;flex-direction:column;height:100%;background:#000;">
         <div class="yt-hbar">
           <h3>YT SHORTS DOOMSCROLLING</h3>
-          <span class="yt-badge">SCROLL FEED</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="chat-clr-btn" onclick="fetchShortsFromApi()" title="Pull fresh Shorts via the YouTube Data API">↻ REFRESH VIA API</button>
+            <span class="yt-badge">SCROLL FEED</span>
+          </div>
         </div>
         <div id="shorts-feed"></div>
       </div>
@@ -1062,6 +1065,38 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
             <div class="settings-row">
               <div class="settings-row-left"><div class="settings-row-label">Clear AI History</div></div>
               <button class="settings-btn danger" onclick="aiClear();showToast('AI history cleared','info')">Clear</button>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="settings-section-hdr red-hdr">
+              <svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 0 0 1.46 6.42 29 29 0 0 0 1 12a29 29 0 0 0 .46 5.58 2.78 2.78 0 0 0 1.95 1.96C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 0 0 1.95-1.96A29 29 0 0 0 23 12a29 29 0 0 0-.46-5.58z"/></svg>
+              <span class="settings-section-title">YOUTUBE SHORTS — DATA API</span>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left"><div class="settings-row-label">YouTube Data API Key</div><div class="settings-row-desc">From Google Cloud Console — stored locally only, used to pull fresh Shorts</div></div>
+              <div class="api-key-wrap">
+                <input type="password" class="api-key-input" id="set-yt-data-key" placeholder="AIza..." autocomplete="off"/>
+                <button class="api-key-save-btn" onclick="saveYtDataApiKey()">SAVE</button>
+                <span class="api-key-status unset" id="yt-data-key-status">NOT SET</span>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left"><div class="settings-row-label">Source Channels</div><div class="settings-row-desc">Hardcoded in code — edit YT_SHORTS_CHANNELS to change</div></div>
+              <span class="settings-tag red" id="yt-channel-count-tag">4 channels</span>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left"><div class="settings-row-label">Max Shorts Per Fetch</div><div class="settings-row-desc">Higher = more quota used per refresh (100 units per 50 results)</div></div>
+              <select class="settings-select" id="set-yt-max-shorts" onchange="applyMaxShortsSetting(this.value)">
+                <option value="50">50</option>
+                <option value="100">100</option>
+                <option value="200" selected>200</option>
+                <option value="500">500</option>
+              </select>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left"><div class="settings-row-label">Refresh Shorts Feed</div><div class="settings-row-desc">Pulls recent video IDs from the channels above via the API</div></div>
+              <button class="settings-btn" onclick="fetchShortsFromApi()">↻ Fetch Now</button>
             </div>
           </div>
 
