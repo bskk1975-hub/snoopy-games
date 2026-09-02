@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Home- Classroom</title>
+<title>Test Project</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap');
 #code-editor-wrap .CodeMirror{height:100%;font-family:'Share Tech Mono',monospace;font-size:13px;}
@@ -337,6 +337,8 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
 .yt-quick-label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);}
 .yt-quick-chip{padding:4px 12px;background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);border-radius:20px;color:#ff8080;font-family:'Share Tech Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.15s;}
 .yt-quick-chip:hover{background:rgba(255,68,68,0.2);}
+.yt-quick-chip.active{background:rgba(255,68,68,0.4);border-color:#ff4444;color:#fff;font-weight:700;}
+.short-channel-badge{position:absolute;bottom:14px;left:14px;background:rgba(0,0,0,0.6);color:#fff;font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 9px;border-radius:20px;border:1px solid rgba(255,255,255,0.25);z-index:2;pointer-events:none;}
 #yt-player-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 .yt-welcome{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:14px;text-align:center;padding:40px 20px;}
 .yt-welcome-icon{font-size:60px;}
@@ -843,6 +845,10 @@ header{position:sticky;top:0;z-index:100;background:rgba(13,17,23,0.96);backdrop
             <button class="chat-clr-btn" onclick="shuffleShortsFeed()" title="Re-shuffle the currently loaded Shorts">🔀 SHUFFLE</button>
             <span class="yt-badge">SCROLL FEED</span>
           </div>
+        </div>
+        <div class="yt-quick-row" id="yt-channel-filter-bar">
+          <span class="yt-quick-label">CHANNELS:</span>
+          <div id="yt-channel-filter-row" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
         </div>
         <div id="shorts-feed"></div>
       </div>
@@ -1464,7 +1470,6 @@ const GEMINI_MODELS = [
   {label:'Nano Banana 2',                   id:'gemini-3.1-flash-image',         note:'Latest Image Generation And Also In BETA'},
   {label:'Gemini 3',                        id:'gemini-3-flash-preview',         note:'Capable'},
   {label:'Gemini 3.1 Flash Lite',           id:'gemini-3.1-flash-lite',          note:'Default and Capable'},
-  {label:'Gemini 3.1 Pro',                  id:'gemini-3.1-pro-preview',         note:'Still Contending For The Best (One Of The Best'},
   {label:'Gemini 3.5 Flash Lite',           id:'gemini-3.5-flash-lite',          note:'Capable and High Quality '},
   {label:'Gemini 3.5 Flash',                id:'gemini-3.5-flash',               note:'High Quality'},
   {label:'Gemini 3.6 Flash',                id:'gemini-3.6-flash',               note:'High Quality And Second Latest'},
@@ -1693,6 +1698,7 @@ function showMain(){
   sysInfoUptimeStart=Date.now();
   updateGeminiKeyStatus();
   updateYtDataKeyStatus();
+  loadSelectedChannels();
   const chTag=document.getElementById('yt-channel-count-tag');if(chTag)chTag.textContent=YT_SHORTS_CHANNELS.length+' channel'+(YT_SHORTS_CHANNELS.length!==1?'s':'');
   const maxSel=document.getElementById('set-yt-max-shorts');if(maxSel)maxSel.value=localStorage.getItem(YT_MAX_SHORTS_KEY)||'200';
   consoleLog('Snoopy v3.1.4 initialized','info');
@@ -1753,7 +1759,7 @@ function navTo(p){
   if(p==='sysinfo'){refreshSysInfo();startSysInfoClock();}
   else if(sysInfoClockInterval){clearInterval(sysInfoClockInterval);sysInfoClockInterval=null;}
   if(p==='youtube')setTimeout(()=>document.getElementById('yt-url-input').focus(),50);
-  if(p==='ytshorts'){if(!shortsInitialized){loadShorts();renderShorts();shortsInitialized=true;}else{shortsRestartObserver();}}
+  if(p==='ytshorts'){renderChannelFilterChips();if(!shortsInitialized){loadShorts();renderShorts();shortsInitialized=true;}else{shortsRestartObserver();}}
   else{shortsPauseAll();}
 }
 
@@ -1945,6 +1951,44 @@ let ytShorts = [];
 let ytShortsFetching = false;
 let shortsObserver = null;
 let shortsActiveIdx = -1;
+const YT_SHORTS_SELECTED_KEY = 'snoopy_yt_shorts_selected_channels';
+let ytSelectedChannels = new Set(YT_SHORTS_CHANNELS); // default: all channels shown
+function loadSelectedChannels(){
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem(YT_SHORTS_SELECTED_KEY)||'null');}catch(e){}
+  if(Array.isArray(saved)){
+    const filtered=saved.filter(h=>YT_SHORTS_CHANNELS.includes(h));
+    ytSelectedChannels=new Set(filtered.length?filtered:YT_SHORTS_CHANNELS);
+  }else{
+    ytSelectedChannels=new Set(YT_SHORTS_CHANNELS);
+  }
+}
+function saveSelectedChannels(){
+  try{localStorage.setItem(YT_SHORTS_SELECTED_KEY,JSON.stringify([...ytSelectedChannels]));}catch(e){}
+}
+function toggleChannelFilter(handle){
+  if(ytSelectedChannels.has(handle)){
+    if(ytSelectedChannels.size===1){showToast('At least one channel must stay selected','info');return;}
+    ytSelectedChannels.delete(handle);
+  }else{
+    ytSelectedChannels.add(handle);
+  }
+  saveSelectedChannels();
+  renderChannelFilterChips();
+  renderShorts();
+}
+function renderChannelFilterChips(){
+  const row=document.getElementById('yt-channel-filter-row');if(!row)return;
+  row.innerHTML='';
+  YT_SHORTS_CHANNELS.forEach(handle=>{
+    const chip=document.createElement('button');chip.type='button';
+    chip.className='yt-quick-chip'+(ytSelectedChannels.has(handle)?' active':'');
+    chip.textContent=(ytSelectedChannels.has(handle)?'✓ ':'')+handle;
+    chip.title=ytSelectedChannels.has(handle)?'Showing this channel — click to hide':'Hidden — click to show';
+    chip.onclick=()=>toggleChannelFilter(handle);
+    row.appendChild(chip);
+  });
+}
 function loadShorts(){
   try{ytShorts = JSON.parse(localStorage.getItem(SHORTS_STORAGE_KEY) || '[]');}catch(e){ytShorts = [];}
 }
@@ -1958,17 +2002,27 @@ function renderShorts(){
   const feed=document.getElementById('shorts-feed');if(!feed)return;
   if(shortsObserver){shortsObserver.disconnect();shortsObserver=null;}
   shortsActiveIdx=-1;
-  if(!ytShorts.length){feed.innerHTML='<div class="short-empty">No Shorts loaded yet.<br><br>Set your YouTube Data API key in Settings → YouTube Shorts, then hit ↻ REFRESH VIA API.</div>';return;}
+  const visible=ytShorts.map((s,i)=>({...s,_storeIdx:i})).filter(s=>!s.channel||ytSelectedChannels.has(s.channel));
+  if(!visible.length){
+    feed.innerHTML=ytShorts.length
+      ?'<div class="short-empty">No Shorts match the selected channels.<br><br>Pick a channel above, or hit ↻ REFRESH VIA API.</div>'
+      :'<div class="short-empty">No Shorts loaded yet.<br><br>Set your YouTube Data API key in Settings → YouTube Shorts, then hit ↻ REFRESH VIA API.</div>';
+    return;
+  }
   feed.innerHTML='';
-  ytShorts.forEach((id,idx)=>{
-    const item=document.createElement('div');item.className='short-item';item.dataset.idx=idx;
+  visible.forEach((s,idx)=>{
+    const item=document.createElement('div');item.className='short-item';item.dataset.idx=idx;item.dataset.storeIdx=s._storeIdx;
     const iframeEl=document.createElement('iframe');
-    iframeEl.src=shortsEmbedSrc(id);
+    iframeEl.src=shortsEmbedSrc(s.id);
     iframeEl.allow='autoplay; encrypted-media; picture-in-picture';
     iframeEl.allowFullscreen=true;
     iframeEl.loading='lazy';
-    iframeEl.dataset.videoId=id;
+    iframeEl.dataset.videoId=s.id;
     item.appendChild(iframeEl);
+    if(s.channel){
+      const badge=document.createElement('div');badge.className='short-channel-badge';badge.textContent=s.channel;
+      item.appendChild(badge);
+    }
     feed.appendChild(item);
   });
   shortsStartObserver();
@@ -2011,8 +2065,8 @@ function shortsRestartObserver(){
   // visible item resumes and everything else stays paused
   shortsStartObserver();
 }
-function removeShort(idx){
-  ytShorts.splice(idx,1);saveShorts();renderShorts();
+function removeShort(storeIdx){
+  ytShorts.splice(storeIdx,1);saveShorts();renderShorts();
 }
 
 // ---- YouTube Data API key ----
@@ -2092,16 +2146,18 @@ function shuffleArray(arr){
 }
 // Interleaves per-channel id lists so consecutive Shorts avoid repeating the
 // same channel back-to-back wherever possible, while still being randomized.
-function shuffleInterleaveChannels(channelLists){
-  const queues=channelLists.map(list=>shuffleArray([...list])).filter(q=>q.length);
+// channelGroups: array of {channel, ids}. Returns array of {id, channel}.
+function shuffleInterleaveChannels(channelGroups){
+  const queues=channelGroups.map(g=>({channel:g.channel,ids:shuffleArray([...g.ids])})).filter(q=>q.ids.length);
   const result=[];
   let lastIdx=-1;
-  while(queues.some(q=>q.length)){
-    let candidates=queues.map((q,i)=>({q,i})).filter(o=>o.q.length);
+  while(queues.some(q=>q.ids.length)){
+    let candidates=queues.map((q,i)=>({q,i})).filter(o=>o.q.ids.length);
     let pickable=candidates.filter(o=>o.i!==lastIdx);
     if(!pickable.length)pickable=candidates; // only one channel left with items — forced repeat
     const choice=pickable[Math.floor(Math.random()*pickable.length)];
-    result.push(choice.q.shift());
+    const id=choice.q.ids.shift();
+    result.push({id,channel:choice.q.channel});
     lastIdx=choice.i;
   }
   return result;
@@ -2119,29 +2175,33 @@ async function fetchShortsFromApi(){
   if(ytShortsFetching)return;
   if(!YT_DATA_API_KEY){showToast('Set your YouTube Data API key in Settings first','error');navTo('settings');return;}
   if(!YT_SHORTS_CHANNELS.length){showToast('No source channels configured in code','error');return;}
+  const channelsToFetch=YT_SHORTS_CHANNELS.filter(h=>ytSelectedChannels.has(h));
+  if(!channelsToFetch.length){showToast('No channels selected — pick at least one channel first','error');return;}
   ytShortsFetching=true;
-  showToast('Fetching Shorts from YouTube...','info');
+  showToast('Fetching Shorts from '+channelsToFetch.length+' channel'+(channelsToFetch.length!==1?'s':'')+'...','info');
   const maxSetting=localStorage.getItem(YT_MAX_SHORTS_KEY)||'200';
   const unlimited=maxSetting==='unlimited';
   // Unlimited still needs a per-channel safety ceiling so a single huge
   // channel (thousands of uploads) can't loop forever or blow the API quota —
   // 1000 per channel is generous (well over what a Shorts session needs) but bounded.
-  const perChannelCap=unlimited?1000:Math.max(10,Math.ceil(parseInt(maxSetting,10)/YT_SHORTS_CHANNELS.length));
-  const channelResults=[];
-  for(const handle of YT_SHORTS_CHANNELS){
+  const perChannelCap=unlimited?1000:Math.max(10,Math.ceil(parseInt(maxSetting,10)/channelsToFetch.length));
+  const channelGroups=[];
+  for(const handle of channelsToFetch){
     try{
       const channelId=await ytResolveChannelId(handle,YT_DATA_API_KEY);
       const uploadsId=await ytGetUploadsPlaylist(channelId,YT_DATA_API_KEY);
       const videoIds=await ytGetPlaylistVideoIds(uploadsId,YT_DATA_API_KEY,perChannelCap);
       const shorts=await ytFilterShorts(videoIds,YT_DATA_API_KEY);
-      channelResults.push(shorts);
+      channelGroups.push({channel:handle,ids:shorts});
       consoleLog('Fetched '+shorts.length+' Shorts from '+handle,'info');
     }catch(chErr){
       consoleLog('Shorts fetch failed for '+handle+': '+chErr.message,'warn');
-      channelResults.push([]);
+      channelGroups.push({channel:handle,ids:[]});
     }
   }
-  let merged=[...new Set(shuffleInterleaveChannels(channelResults))];
+  let merged=shuffleInterleaveChannels(channelGroups);
+  const seen=new Set();
+  merged=merged.filter(s=>{if(seen.has(s.id))return false;seen.add(s.id);return true;});
   if(!unlimited){
     const totalCap=parseInt(maxSetting,10)||200;
     merged=merged.slice(0,totalCap);
@@ -2152,7 +2212,7 @@ async function fetchShortsFromApi(){
   saveShorts();
   renderShorts();
   shortsInitialized=true;
-  showToast('Loaded '+merged.length+' Shorts, shuffled ✓','success');
+  showToast('Loaded '+merged.length+' Shorts from '+channelsToFetch.length+' channel'+(channelsToFetch.length!==1?'s':'')+', shuffled ✓','success');
 }
 
 // ════════════════════════════════════════════════
