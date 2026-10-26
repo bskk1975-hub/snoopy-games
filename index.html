@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>History Explorer — 7th Grade</title>
+<style>
+  :root {
+    --bg: #f5f2e9;
+    --ink: #1d1a17;
+    --accent: #a8402b;
+    --card: #ffffff;
+    --header: #ffffff;
+    --side: #2a1f1a;
+    --side-ink: #f3ece2;
+    --side-muted: #a39887;
+    --rule: #d9d0bd;
+    --muted: #5e564c;
+  }
+  [data-theme="dark"] {
+    --bg: #17140f; --ink: #ece4d6; --accent: #e0826a; --card: #221e18;
+    --header: #1f1b15; --side: #0f0d0a; --rule: #3a3329; --muted: #a39887;
+  }
+  [data-theme="parchment"] {
+    --bg: #ecdcb8; --ink: #2b2112; --accent: #8a3a1c; --card: #f6ecd2;
+    --header: #f3e6c4; --side: #3a2a14; --rule: #cdb98a; --muted: #6b5a3a;
+  }
+  [data-theme="ocean"] {
+    --bg: #eaf1f7; --ink: #13222f; --accent: #1f5d8c; --card: #ffffff;
+    --header: #ffffff; --side: #12293b; --rule: #c7d6e3; --muted: #4c6073;
+  }
+  [data-theme="forest"] {
+    --bg: #eef3ea; --ink: #172319; --accent: #2f6b3a; --card: #ffffff;
+    --header: #ffffff; --side: #1b2d1f; --rule: #cbd9c4; --muted: #4f624f;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    background: var(--bg);
+    color: var(--ink);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ---------- Header ---------- */
+  header {
+    height: 58px;
+    flex: none;
+    background: var(--header);
+    border-bottom: 1px solid var(--rule);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 0 22px;
+    position: relative;
+    z-index: 20;
+  }
+  .grid-btn {
+    background: none; border: 0; padding: 6px; cursor: pointer;
+    display: grid; grid-template-columns: repeat(3, 4px); gap: 3px;
+  }
+  .grid-btn i { width: 4px; height: 4px; border-radius: 50%; background: var(--ink); opacity: .75; display: block; }
+  .grid-btn:hover i { background: var(--accent); opacity: 1; }
+  .brand { font-weight: 700; font-size: 19px; color: var(--accent); text-decoration: none; letter-spacing: .1px; }
+
+  .search { margin-left: auto; position: relative; width: min(280px, 40vw); }
+  .search input {
+    width: 100%;
+    font: 14px Georgia, serif;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    padding: 8px 14px 8px 34px;
+    outline: none;
+  }
+  .search input:focus { border-color: var(--accent); }
+  .search .mag {
+    position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+    width: 11px; height: 11px; border: 1.5px solid var(--muted); border-radius: 50%; pointer-events: none;
+  }
+  .search .mag::after {
+    content: ""; position: absolute; width: 5px; height: 1.5px; background: var(--muted);
+    right: -5px; bottom: -2px; transform: rotate(45deg);
+  }
+  .results {
+    position: absolute; top: calc(100% + 6px); right: 0; width: min(380px, 90vw);
+    background: var(--card); border: 1px solid var(--rule); border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    max-height: 60vh; overflow: auto; display: none;
+  }
+  .results.open { display: block; }
+  .results a {
+    display: block; padding: 10px 14px; text-decoration: none; color: var(--ink);
+    border-bottom: 1px solid var(--rule); font-size: 14px;
+  }
+  .results a:last-child { border-bottom: 0; }
+  .results a:hover, .results a.focus { background: var(--bg); }
+  .results b { color: var(--accent); display: block; margin-bottom: 2px; }
+  .results span { color: var(--muted); font-size: 13px; }
+  .results mark { background: rgba(168,64,43,.18); color: inherit; border-radius: 2px; }
+  .results .none { padding: 12px 14px; color: var(--muted); font-style: italic; font-size: 14px; }
+
+  /* ---------- Layout ---------- */
+  .layout { flex: 1; display: flex; min-height: 0; position: relative; }
+
+  nav {
+    width: 260px; flex: none;
+    background: var(--side);
+    color: var(--side-ink);
+    padding: 22px 12px 14px;
+    overflow-y: auto;
+    display: flex; flex-direction: column;
+    transition: margin-left .25s ease;
+  }
+  body.collapsed nav { margin-left: -260px; }
+  nav h4 {
+    margin: 22px 12px 8px;
+    font-size: 11px; letter-spacing: 1.6px; font-weight: 400;
+    text-transform: uppercase; color: var(--side-muted);
+  }
+  nav h4:first-child { margin-top: 0; }
+  nav a.item {
+    display: block; padding: 8px 12px; margin-bottom: 2px;
+    color: var(--side-ink); text-decoration: none; font-size: 15px;
+    border-radius: 6px; border-left: 3px solid transparent;
+  }
+  nav a.item:hover { background: rgba(255,255,255,.08); }
+  nav a.item.active { background: rgba(255,255,255,.14); border-left-color: var(--accent); }
+  [data-theme="dark"] nav a.item.active { border-left-color: var(--accent); }
+  .nav-foot { margin-top: auto; padding: 14px 12px 0; border-top: 1px solid rgba(255,255,255,.12); }
+  .nav-foot a { color: var(--side-muted); font-size: 12px; text-decoration: none; letter-spacing: .3px; }
+  .nav-foot a:hover { color: var(--side-ink); text-decoration: underline; }
+
+  main { flex: 1; overflow-y: auto; padding: 38px 40px 80px; scroll-behavior: smooth; }
+  article { max-width: 540px; animation: fade .35s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- Article typography ---------- */
+  article h1 { margin: 0; font-size: 35px; line-height: 1.15; color: var(--accent); }
+  article .sub { margin: 6px 0 0; font-style: italic; font-size: 14px; color: var(--muted); }
+  article .rule { border: 0; border-top: 1px solid var(--rule); margin: 14px 0 26px; }
+  article h2 { margin: 30px 0 10px; font-size: 22px; color: var(--accent); }
+  article p { margin: 0 0 14px; font-size: 14.5px; line-height: 1.6; }
+  article ul { margin: 0 0 16px; padding-left: 24px; font-size: 14.5px; line-height: 1.7; }
+  article strong { font-weight: 700; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--rule); border-radius: 12px;
+    padding: 18px 22px 8px; margin: 18px 0 8px;
+  }
+  .card h3 { margin: 0 0 10px; font-size: 16px; }
+  .card h3:not(:first-child) { margin-top: 14px; }
+
+  .callout {
+    background: var(--card); border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0; padding: 10px 14px; margin: 18px 0;
+    font-size: 14.5px; line-height: 1.55;
+  }
+  .callout b.lead { color: var(--accent); }
+
+  .timeline { border-left: 3px solid var(--accent); padding-left: 10px; margin: 14px 0 18px; }
+  .timeline div { font-size: 14.5px; line-height: 1.4; margin-bottom: 8px; }
+  .timeline small { display: block; color: var(--accent); font-weight: 700; font-size: 11.5px; }
+
+  .more {
+    margin-top: 28px; padding-top: 10px; border-top: 1px dotted var(--rule);
+    font-style: italic; font-size: 12.5px; color: var(--muted);
+  }
+
+  /* ---------- Small screens ---------- */
+  @media (max-width: 760px) {
+    nav { position: absolute; z-index: 15; height: 100%; box-shadow: 4px 0 20px rgba(0,0,0,.3); }
+    body:not(.collapsed) nav { margin-left: 0; }
+    body.collapsed nav { margin-left: -270px; }
+    main { padding: 26px 20px 60px; }
+    article h1 { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <button class="grid-btn" id="toggle" aria-label="Toggle menu">
+    <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+  </button>
+  <a class="brand" href="#greece">History Explorer</a>
+  <div class="search">
+    <span class="mag"></span>
+    <input id="q" type="search" placeholder="Search articles, people, events..." autocomplete="off">
+    <div class="results" id="results"></div>
+  </div>
+</header>
+
+<div class="layout">
+  <nav id="nav"></nav>
+  <main id="main"><article id="article"></article></main>
+</div>
+
+<script>
+/* ================== THEME (shared with index2.html) ================== */
+(function () {
+  try {
+    var t = localStorage.getItem("history-theme");
+    if (t) document.documentElement.setAttribute("data-theme", t);
+  } catch (e) {}
+})();
+
+/* ================== CONTENT ================== */
+var GROUPS = [
+  { title: "Ancient World", ids: ["greece", "rome", "egypt", "mesopotamia", "china"] },
+  { title: "Middle Ages", ids: ["medieval", "vikings", "crusades", "blackdeath"] },
+  { title: "Renaissance & Exploration", ids: ["davinci", "exploration", "aztecinca"] },
+  { title: "Modern Era", ids: ["revolution", "industrial"] }
+];
+
+var ARTICLES = {
+  greece: {
+    title: "Ancient Greece",
+    html: `
+      <p>Ancient Greece thrived from about <strong>800 BCE to 146 BCE</strong> on the rocky peninsulas of the Mediterranean. The Greeks gave us democracy, philosophy, theater, and the Olympic Games.</p>
+      <h2>The City-States</h2>
+      <p>Greece wasn't one country — it was a collection of independent <strong>city-states</strong> called <em>poleis</em>.</p>
+      <div class="card">
+        <h3>Athens</h3>
+        <p>Birthplace of <strong>democracy</strong>. Citizens voted on laws. Valued learning, art, and philosophy.</p>
+        <h3>Sparta</h3>
+        <p>A warrior society. Boys began military training at age 7. Valued strength and discipline above all else.</p>
+      </div>
+      <h2>Great Thinkers</h2>
+      <ul>
+        <li><strong>Socrates</strong> — asked tough questions to find truth.</li>
+        <li><strong>Plato</strong> — wrote about the ideal society.</li>
+        <li><strong>Aristotle</strong> — studied science, logic, and animals.</li>
+      </ul>
+      <div class="callout"><b class="lead">Did you know?</b> "Democracy" comes from Greek <em>demos</em> (people) + <em>kratos</em> (power).</div>
+      <h2>Myths and Gods</h2>
+      <p>The Greeks believed in many gods on <strong>Mount Olympus</strong>. Zeus ruled the sky, Poseidon the sea, Athena was wisdom.</p>
+      <h2>Alexander the Great</h2>
+      <p>By age 30, <strong>Alexander the Great</strong> of Macedonia had conquered an empire stretching from Greece to India — and he never lost a battle.</p>`
+  },
+
+  rome: {
+    title: "Ancient Rome",
+    html: `
+      <p>Rome's story stretches over <strong>1,000 years</strong>, from a riverside village to the largest empire of the ancient world.</p>
+      <h2>From Republic to Empire</h2>
+      <p>For 500 years Rome was a <strong>Republic</strong> ruled by senators. In 27 BCE, <strong>Augustus</strong> became the first emperor.</p>
+      <div class="card">
+        <h3>Roman Achievements</h3>
+        <ul>
+          <li><strong>Roads</strong> — 250,000 miles of stone roads.</li>
+          <li><strong>Aqueducts</strong> — carried fresh water across the empire.</li>
+          <li><strong>Law</strong> — "innocent until proven guilty" is a Roman idea.</li>
+          <li><strong>Concrete</strong> — Roman buildings still stand today.</li>
+        </ul>
+      </div>
+      <h2>Julius Caesar</h2>
+      <p>A brilliant general assassinated on the <strong>Ides of March, 44 BCE</strong>.</p>
+      <div class="callout"><b class="lead">Fun fact:</b> July and August are named after Julius and Augustus Caesar.</div>
+      <h2>Daily Life</h2>
+      <p>Romans cheered gladiator fights at the <strong>Colosseum</strong> and chariot races at the Circus Maximus.</p>
+      <h2>The Fall</h2>
+      <p>By 476 CE, the Western Roman Empire fell — but Roman law, language, and engineering still shape our world.</p>`
+  },
+
+  egypt: {
+    title: "Ancient Egypt",
+    html: `
+      <p>For over <strong>3,000 years</strong>, the civilization of Ancient Egypt flourished along the Nile River.</p>
+      <h2>The Mighty Nile</h2>
+      <p>The Nile flooded every year, leaving rich black soil. Without the Nile, Egypt would be desert.</p>
+      <h2>Pharaohs and Pyramids</h2>
+      <p>Egyptians were ruled by <strong>pharaohs</strong>, kings believed to be living gods. The <strong>Great Pyramid of Giza</strong>, built around 2560 BCE for Pharaoh Khufu, stood for thousands of years as the tallest building on Earth.</p>
+      <div class="card">
+        <h3>Famous Pharaohs</h3>
+        <ul>
+          <li><strong>Tutankhamun</strong> — the boy king, whose tomb was found nearly untouched in 1922.</li>
+          <li><strong>Ramses II</strong> — ruled 66 years and built enormous monuments.</li>
+          <li><strong>Cleopatra VII</strong> — the last pharaoh of Egypt.</li>
+        </ul>
+      </div>
+      <h2>Mummies and the Afterlife</h2>
+      <p>Egyptians believed in life after death and preserved bodies as <strong>mummies</strong>, wrapped in linen and buried with treasures.</p>
+      <div class="callout"><b class="lead">Cool fact:</b> Egyptians invented one of the first writing systems — <em>hieroglyphs</em> — using over 700 picture symbols.</div>`
+  },
+
+  mesopotamia: {
+    title: "Mesopotamia",
+    html: `
+      <p><strong>Mesopotamia</strong> means "land between the rivers" — the Tigris and Euphrates. It's often called the <strong>"Cradle of Civilization."</strong></p>
+      <h2>First Cities</h2>
+      <p>Around 3500 BCE, the <strong>Sumerians</strong> built the world's first cities, like Ur and Uruk.</p>
+      <h2>Big Inventions</h2>
+      <ul>
+        <li>The <strong>wheel</strong></li>
+        <li><strong>Cuneiform</strong> — the earliest known writing system</li>
+        <li>The <strong>60-minute hour</strong> and 360-degree circle</li>
+        <li>Early systems of <strong>math and law</strong></li>
+      </ul>
+      <h2>Hammurabi's Code</h2>
+      <p>Around 1750 BCE, King <strong>Hammurabi</strong> of Babylon carved 282 laws into stone — one of the first written law codes in history.</p>
+      <div class="callout"><b class="lead">"An eye for an eye"</b> comes from Hammurabi's Code.</div>`
+  },
+
+  china: {
+    title: "Ancient China",
+    html: `
+      <p>Ancient China is one of the world's oldest continuous civilizations, with dynasties stretching back over <strong>4,000 years</strong>.</p>
+      <h2>The Dynasties</h2>
+      <p>China was ruled by family lines called <strong>dynasties</strong> — Shang, Zhou, Qin, Han, and many more.</p>
+      <h2>The Great Wall</h2>
+      <p>Begun under Emperor <strong>Qin Shi Huang</strong> around 220 BCE, the <strong>Great Wall of China</strong> eventually stretched over 13,000 miles to defend against northern invaders.</p>
+      <h2>Inventions That Changed the World</h2>
+      <ul>
+        <li><strong>Paper</strong> (around 100 CE)</li>
+        <li><strong>Gunpowder</strong></li>
+        <li><strong>The compass</strong></li>
+        <li><strong>Printing</strong> — centuries before Europe</li>
+        <li><strong>Silk</strong> — traded along the famous <em>Silk Road</em></li>
+      </ul>
+      <div class="callout"><b class="lead">Confucius</b>, a great teacher around 500 BCE, taught about kindness, respect, and good government. His ideas still influence Asia today.</div>`
+  },
+
+  medieval: {
+    title: "Medieval Europe",
+    html: `
+      <p>The <strong>Middle Ages</strong> (roughly 500–1500 CE) followed the fall of Rome. Life centered around castles, knights, and the Church.</p>
+      <h2>Feudalism</h2>
+      <p>Society was a pyramid: <strong>king → nobles → knights → peasants</strong>. Lords gave land to knights in exchange for military service, and peasants worked the land.</p>
+      <h2>Knights and Castles</h2>
+      <p>Knights followed a code called <strong>chivalry</strong> — bravery, honor, and protecting the weak. Castles had moats, drawbridges, and tall stone walls.</p>
+      <div class="card">
+        <h3>Life as a Peasant</h3>
+        <p>Most people were peasants who farmed from sunrise to sunset, owned little, and rarely traveled more than a few miles from home.</p>
+      </div>
+      <h2>The Church</h2>
+      <p>The <strong>Catholic Church</strong> was the most powerful institution in Europe. Monasteries preserved books and learning during this time.</p>`
+  },
+
+  vikings: {
+    title: "The Vikings",
+    html: `
+      <p>The <strong>Vikings</strong> were seafaring warriors and traders from Scandinavia (Norway, Sweden, Denmark) from about 790 to 1100 CE.</p>
+      <h2>Longships</h2>
+      <p>Their famous <strong>longships</strong> were fast, flexible, and could sail across oceans <em>and</em> up shallow rivers. This let them raid, trade, and explore far from home.</p>
+      <h2>Explorers, Not Just Raiders</h2>
+      <p>Vikings reached <strong>Iceland, Greenland, and even North America</strong> — 500 years before Columbus! <strong>Leif Erikson</strong> landed in what's now Canada around 1000 CE.</p>
+      <div class="callout"><b class="lead">Myth-buster:</b> Vikings did NOT wear horned helmets. That's a 1800s invention from opera costumes!</div>
+      <h2>Norse Gods</h2>
+      <p>They worshipped gods like <strong>Odin, Thor, and Freya</strong>. The days of the week <em>Wednesday</em> (Odin's day), <em>Thursday</em> (Thor's day), and <em>Friday</em> (Freya's day) come from them.</p>`
+  },
+
+  crusades: {
+    title: "The Crusades",
+    html: `
+      <p>The <strong>Crusades</strong> (1095–1291) were a series of religious wars where European Christians tried to take control of the <strong>Holy Land</strong> (Jerusalem) from Muslim rulers.</p>
+      <h2>Why They Happened</h2>
+      <p>In 1095, Pope Urban II called for Christians to march to Jerusalem. Thousands of knights and peasants answered.</p>
+      <h2>Effects</h2>
+      <ul>
+        <li>Trade between Europe and the Middle East <strong>exploded</strong>.</li>
+        <li>Europeans learned new ideas in math, science, and medicine.</li>
+        <li>New foods like <strong>sugar, lemons, and spices</strong> arrived in Europe.</li>
+      </ul>
+      <p>Though the Crusades caused tremendous suffering, they ended Europe's isolation and helped set the stage for the Renaissance.</p>`
+  },
+
+  blackdeath: {
+    title: "The Black Death",
+    html: `
+      <p>In the mid-1300s, a terrifying plague called the <strong>Black Death</strong> swept across Europe and Asia.</p>
+      <h2>What It Was</h2>
+      <p>The disease was likely <strong>bubonic plague</strong>, spread by fleas on rats traveling on trade ships.</p>
+      <h2>The Toll</h2>
+      <p>In just a few years, the Black Death killed an estimated <strong>1 in 3 Europeans</strong> — perhaps 25 million people.</p>
+      <div class="callout"><b class="lead">Aftermath:</b> With so few workers left, surviving peasants could demand better pay and rights — slowly ending feudalism.</div>`
+  },
+
+  davinci: {
+    title: "Age of Da Vinci",
+    html: `
+      <p>The age of <strong>Leonardo da Vinci</strong> (1452–1519) was the <strong>Renaissance</strong> — a "rebirth" of art and science across Europe from about 1300 to 1600.</p>
+      <h2>Who Was Leonardo?</h2>
+      <p>Born in the small Italian town of Vinci, he became a painter, inventor, scientist, and engineer — a true <strong>"Renaissance man."</strong></p>
+      <div class="card">
+        <h3>Famous Works</h3>
+        <ul>
+          <li><strong>Mona Lisa</strong> — the world's most famous painting.</li>
+          <li><strong>The Last Supper</strong> — a giant wall painting in Milan.</li>
+          <li><strong>Vitruvian Man</strong> — a drawing of the perfect human proportions.</li>
+        </ul>
+      </div>
+      <h2>Inventor Ahead of His Time</h2>
+      <p>Leonardo filled <strong>13,000+ pages</strong> of notebooks with flying machines, tanks, parachutes — even an early robot!</p>
+      <div class="callout"><b class="lead">Cool fact:</b> Leonardo wrote in <em>mirror writing</em> — backwards.</div>
+      <h2>Other Renaissance Stars</h2>
+      <ul>
+        <li><strong>Michelangelo</strong> — sculpted <em>David</em>, painted the Sistine Chapel.</li>
+        <li><strong>Galileo Galilei</strong> — proved Earth orbits the Sun.</li>
+        <li><strong>Gutenberg</strong> — invented the printing press.</li>
+      </ul>`
+  },
+
+  exploration: {
+    title: "Age of Exploration",
+    html: `
+      <p>From the 1400s to 1600s, European sailors set out on dangerous voyages to find new lands and trade routes. This was the <strong>Age of Exploration</strong>.</p>
+      <h2>Why?</h2>
+      <p>Europeans wanted <strong>spices, gold, and a sea route to Asia</strong>. New ships called <em>caravels</em> and better maps made long trips possible.</p>
+      <h2>Famous Explorers</h2>
+      <div class="timeline">
+        <div><small>1492</small><strong>Christopher Columbus</strong> sailed west and reached the Caribbean.</div>
+        <div><small>1498</small><strong>Vasco da Gama</strong> sailed around Africa to India.</div>
+        <div><small>1519–1522</small><strong>Ferdinand Magellan's</strong> crew became the first to sail around the world.</div>
+        <div><small>1607</small>The English founded <strong>Jamestown</strong>, their first lasting colony in America.</div>
+      </div>
+      <div class="callout"><b class="lead">The dark side:</b> Exploration brought disease, slavery, and conquest that devastated native peoples in the Americas, Africa, and beyond.</div>`
+  },
+
+  aztecinca: {
+    title: "Aztec & Inca Empires",
+    html: `
+      <p>While Europe explored, two great empires ruled the Americas: the <strong>Aztecs</strong> in Mexico and the <strong>Inca</strong> in the Andes.</p>
+      <h2>The Aztecs</h2>
+      <p>Their capital, <strong>Tenochtitlán</strong>, was built on a lake and had floating gardens, canals, and over 200,000 people — bigger than most European cities of the time.</p>
+      <h2>The Inca</h2>
+      <p>The Inca Empire stretched 2,500 miles along the Andes Mountains. Their hidden city <strong>Machu Picchu</strong> still stands high in the clouds.</p>
+      <ul>
+        <li>They built <strong>15,000 miles of roads</strong> through mountains.</li>
+        <li>They had no wheels or writing — but kept records on knotted strings called <em>quipu</em>.</li>
+      </ul>
+      <div class="callout"><b class="lead">Sadly:</b> Spanish conquistadors led by <b class="lead">Cortés</b> (Aztecs, 1521) and <b class="lead">Pizarro</b> (Inca, 1533) destroyed both empires, helped by European diseases.</div>`
+  },
+
+  revolution: {
+    title: "American Revolution",
+    html: `
+      <p>The <strong>American Revolution</strong> (1775–1783) was a war in which the 13 American colonies broke free from Britain to become the United States.</p>
+      <h2>Why It Started</h2>
+      <p>Britain taxed the colonies without letting them vote in Parliament. Colonists protested: <strong>"No taxation without representation!"</strong></p>
+      <h2>Key Moments</h2>
+      <div class="timeline">
+        <div><small>1773</small><strong>Boston Tea Party</strong> — colonists dumped British tea into Boston Harbor.</div>
+        <div><small>1775</small>The war began at <strong>Lexington and Concord</strong> — "the shot heard round the world."</div>
+        <div><small>July 4, 1776</small>The <strong>Declaration of Independence</strong> was signed.</div>
+        <div><small>1781</small><strong>British surrender at Yorktown</strong>, thanks in part to French help.</div>
+        <div><small>1787</small>The <strong>U.S. Constitution</strong> was written.</div>
+      </div>
+      <p><strong>George Washington</strong> led the American army and later became the first president.</p>`
+  },
+
+  industrial: {
+    title: "Industrial Revolution",
+    html: `
+      <p>The <strong>Industrial Revolution</strong> (about 1760–1840) changed the way people lived and worked more than almost anything else in history.</p>
+      <h2>From Hand to Machine</h2>
+      <p>For thousands of years, goods were made by hand. Now, <strong>machines in factories</strong> could produce them faster and cheaper.</p>
+      <h2>Big Inventions</h2>
+      <ul>
+        <li><strong>Steam engine</strong> (James Watt) — powered factories, trains, and ships.</li>
+        <li><strong>Cotton gin</strong> — sped up cotton production.</li>
+        <li><strong>Railroads</strong> — connected cities like never before.</li>
+        <li><strong>Telegraph</strong> — sent messages across continents in minutes.</li>
+      </ul>
+      <h2>Life in the Cities</h2>
+      <p>Millions of people moved from farms to cities to work in factories. Conditions were often dangerous, hours were long, and even children worked. Over time, reforms led to safer jobs, schools, and shorter work weeks.</p>
+      <div class="callout"><b class="lead">Impact:</b> The Industrial Revolution created the modern world — but also pollution, child labor crises, and huge gaps between rich and poor.</div>
+      <div class="more">More chapters coming — World Wars, Civil Rights Movement, the Space Age, and beyond.</div>`
+  }
+};
+
+/* ================== RENDER ================== */
+var nav = document.getElementById("nav");
+var main = document.getElementById("main");
+var article = document.getElementById("article");
+
+// Sidebar
+nav.innerHTML = GROUPS.map(function (g) {
+  return "<h4>" + g.title.replace("&", "&amp;") + "</h4>" +
+    g.ids.map(function (id) {
+      return '<a class="item" href="#' + id + '" data-id="' + id + '">' + ARTICLES[id].title.replace("&", "&amp;") + "</a>";
+    }).join("");
+}).join("") +
+'<div class="nav-foot"><a href="index2.html" id="settings">settings</a></div>';
+
+function show(id) {
+  if (!ARTICLES[id]) id = "greece";
+  var a = ARTICLES[id];
+  article.style.animation = "none";
+  void article.offsetWidth;                 // restart the fade animation
+  article.style.animation = "";
+  article.innerHTML =
+    "<h1>" + a.title.replace("&", "&amp;") + "</h1>" +
+    '<p class="sub">A 7th grade journey through the ages</p>' +
+    '<hr class="rule">' + a.html;
+  main.scrollTop = 0;
+  document.title = a.title + " — History Explorer";
+  nav.querySelectorAll("a.item").forEach(function (el) {
+    el.classList.toggle("active", el.dataset.id === id);
+  });
+  if (window.innerWidth <= 760) document.body.classList.add("collapsed");
+}
+
+window.addEventListener("hashchange", function () { show(location.hash.slice(1)); });
+show(location.hash.slice(1));
+
+// Grid button toggles the sidebar
+var toggle = document.getElementById("toggle");
+if (window.innerWidth <= 760) document.body.classList.add("collapsed");
+toggle.addEventListener("click", function () { document.body.classList.toggle("collapsed"); });
+
+/* ================== SEARCH ================== */
+var q = document.getElementById("q");
+var results = document.getElementById("results");
+var plain = {};
+Object.keys(ARTICLES).forEach(function (id) {
+  var tmp = document.createElement("div");
+  tmp.innerHTML = ARTICLES[id].html;
+  plain[id] = tmp.textContent.replace(/\s+/g, " ").trim();
+});
+
+function escapeHtml(s) { return s.replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+function escapeRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+
+function runSearch() {
+  var term = q.value.trim();
+  if (!term) { results.classList.remove("open"); results.innerHTML = ""; return; }
+  var re = new RegExp(escapeRe(term), "i");
+  var hits = [];
+  Object.keys(ARTICLES).forEach(function (id) {
+    var inTitle = re.test(ARTICLES[id].title);
+    var m = plain[id].match(re);
+    if (inTitle || m) {
+      var snippet = "";
+      if (m) {
+        var start = Math.max(0, m.index - 40);
+        snippet = (start > 0 ? "…" : "") + plain[id].slice(start, m.index + term.length + 70) + "…";
+      } else {
+        snippet = plain[id].slice(0, 100) + "…";
+      }
+      hits.push({ id: id, title: ARTICLES[id].title, snippet: snippet, score: inTitle ? 0 : 1 });
+    }
+  });
+  hits.sort(function (a, b) { return a.score - b.score; });
+  var hl = new RegExp("(" + escapeRe(term) + ")", "ig");
+  results.innerHTML = hits.length
+    ? hits.map(function (h) {
+        return '<a href="#' + h.id + '"><b>' + escapeHtml(h.title) + "</b><span>" +
+               escapeHtml(h.snippet).replace(hl, "<mark>$1</mark>") + "</span></a>";
+      }).join("")
+    : '<div class="none">No matches for "' + escapeHtml(term) + '"</div>';
+  results.classList.add("open");
+}
+q.addEventListener("input", runSearch);
+q.addEventListener("keydown", function (e) {
+  if (e.key === "Enter") {
+    var first = results.querySelector("a");
+    if (first) { location.hash = first.getAttribute("href"); q.value = ""; runSearch(); q.blur(); }
+  } else if (e.key === "Escape") { q.value = ""; runSearch(); q.blur(); }
+});
+results.addEventListener("click", function () { q.value = ""; runSearch(); });
+document.addEventListener("click", function (e) {
+  if (!e.target.closest(".search")) results.classList.remove("open");
+});
+</script>
+</body>
+</html>
