@@ -816,7 +816,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;}
 </head>
 <body>
 
-<!-- ============ PAGE 1 : index.html ============ -->
+<!-- ============ PAGE 1 : page 1 ============ -->
 <div id="p1" class="page on">
 <header>
   <button class="grid-btn" id="toggle" aria-label="Toggle menu">
@@ -836,7 +836,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;}
 </div>
 </div>
 
-<!-- ============ PAGE 2 : index2.html ============ -->
+<!-- ============ PAGE 2 : page 2 ============ -->
 <div id="p2" class="page">
 <div class="nav-bar">
         <div class="nav-item active-nav" id="n1" onclick="swap('card-calc', 'n1')">CALC</div>
@@ -888,7 +888,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;}
     </div>
 </div>
 
-<!-- ============ PAGE 3 : index3.html ============ -->
+<!-- ============ PAGE 3 : page 3 ============ -->
 <div id="p3" class="page">
 <!-- LOGIN -->
 <div class="overlay" id="login-overlay">
@@ -1876,11 +1876,11 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closetag.min.js"></script>
 
 <script>
-/* ============ PAGE 1 : index.html ============ */
+/* ============ PAGE 1 : page 1 ============ */
 (function(){
 var P1 = document.getElementById("p1");
 
-/* ================== THEME (shared with index2.html) ================== */
+/* ================== THEME (shared with page 2) ================== */
 (function () {
   try {
     var t = localStorage.getItem("history-theme");
@@ -2249,7 +2249,7 @@ document.addEventListener("click", function (e) {
 })();
 </script>
 <script>
-/* ============ PAGE 2 : index2.html ============ */
+/* ============ PAGE 2 : page 2 ============ */
 (function(){
 Object.assign(window,{calc,pop,resetType,swap});
 var P2 = document.getElementById("p2");
@@ -2345,7 +2345,7 @@ var P2 = document.getElementById("p2");
 })();
 </script>
 <script>
-/* ============ PAGE 3 : index3.html ============ */
+/* ============ PAGE 3 : page 3 ============ */
 (function(){
 Object.assign(window,{addCustomChannel,addNote,addTodo,aiClear,aiExportConversation,aiHandleFileSelect,aiHandleKey,aiQuick,aiRegenerate,aiResize,aiSend,aiToggleMic,applyAiModel,applyCustomAccent,applyExperienceSort,applyFontSize,applyMaxShortsSetting,applyTheme,applyToastPos,backToExperienceList,blockedOpenTab,brBack,brClearAll,brClearHistory,brCopyUrl,brForward,brGo,brGoHome,brLoadUrl,brNewTab,brOpenExternal,brRefresh,brSearch,brToggleBookmarkCurrent,brToggleBookmarksPanel,brToggleHistory,brUrlKeydown,calcClearHistory,chatHandleFileSelect,chatToggleMic,checkPw,clearAllData,clearChat,clearChatSilent,clearCompletedTodos,clearConsole,closeModal,closeUserProfileModal,codeDownload,codeReset,codeRun,consoleExec,copySysInfo,dismissToast,doLogin,editSystemPrompt,exitViewProfile,exportAllData,exportChatLog,fetchShortsFromApi,filterChatMessages,handleAvatarUpload,importAllData,logout,navTo,onSearch,openCurrentInNewTab,openSnoopyBlank,playExperience,playExperienceNewTab,refreshSysInfo,removeAvatar,resetSystemPrompt,saveGeminiKey,saveProfile,saveSystemPrompt,saveYtDataApiKey,sendChat,setConsoleFilter,setTodoFilter,showToast,shuffleShortsFeed,timerReset,timerSetPreset,timerStartPause,toggleAnimations,toggleCompact,toggleEye,toggleGridBg,toggleLetterSidebar,toolsSwitch,updateAiCharCount,updateSerpModeLabel,ytLoad,ytLoadId,ytOpenExternal,ytOpenNativeSearch,ytStop});
 var P3 = document.getElementById("p3");
