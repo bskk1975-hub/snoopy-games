@@ -2164,7 +2164,7 @@ nav.innerHTML = GROUPS.map(function (g) {
       return '<a class="item" href="#' + id + '" data-id="' + id + '">' + ARTICLES[id].title.replace("&", "&amp;") + "</a>";
     }).join("");
 }).join("") +
-'<div class="nav-foot"><a href="#" id="settings" onclick="goTo(2);return false;">settings</a></div>';
+'<div class="nav-foot"><a href="#" id="settings">settings</a></div>';
 
 function show(id) {
   if (!ARTICLES[id]) id = "greece";
@@ -4503,6 +4503,10 @@ window.addEventListener('DOMContentLoaded',()=>{
     if (!fromPop) { try { history.pushState({page: n}, ''); } catch (e) {} }
   };
   window.addEventListener('popstate', function (e) { goTo((e.state && e.state.page) || 1, true); });
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('#settings');
+    if (a) { e.preventDefault(); goTo(2); }
+  });
   goTo(window.__startPage || 1, true);
 })();
 </script>
