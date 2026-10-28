@@ -133,6 +133,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;}
 :where(#p1) .nav-foot{ margin-top: auto; padding: 14px 12px 0; border-top: 1px solid rgba(255,255,255,.12); }
 :where(#p1) .nav-foot a{ color: var(--side-muted); font-size: 12px; text-decoration: none; letter-spacing: .3px; }
 :where(#p1) .nav-foot a:hover{ color: var(--side-ink); text-decoration: underline; }
+:where(#p1) .nav-foot a{ display:block; padding:10px 0; font-size:14px; }
 :where(#p1) main{ flex: 1; overflow-y: auto; padding: 38px 40px 80px; scroll-behavior: smooth; }
 :where(#p1) article{ max-width: 540px; animation: fade .35s ease; }
 @keyframes fade{ from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
@@ -815,6 +816,25 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
 </head>
 <body>
+<script>
+(function(){
+  ['localStorage','sessionStorage'].forEach(function(n){
+    var ok=false;
+    try{var s=window[n];s.setItem('__t','1');s.removeItem('__t');ok=true;}catch(e){}
+    if(ok)return;
+    var m={};
+    var shim={
+      getItem:function(k){return k in m?m[k]:null;},
+      setItem:function(k,v){m[k]=String(v);},
+      removeItem:function(k){delete m[k];},
+      clear:function(){m={};},
+      key:function(i){return Object.keys(m)[i]||null;},
+      get length(){return Object.keys(m).length;}
+    };
+    try{Object.defineProperty(window,n,{value:shim,configurable:true});}catch(e){}
+  });
+})();
+</script>
 
 <!-- ============ PAGE 1 : page 1 ============ -->
 <div id="p1" class="page on">
@@ -4505,8 +4525,8 @@ window.addEventListener('DOMContentLoaded',()=>{
   window.addEventListener('popstate', function (e) { goTo((e.state && e.state.page) || 1, true); });
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('#settings');
-    if (a) { e.preventDefault(); goTo(2); }
-  });
+    if (a) { e.preventDefault(); e.stopPropagation(); goTo(2); }
+  }, true);
   goTo(window.__startPage || 1, true);
 })();
 </script>
